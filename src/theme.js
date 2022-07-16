@@ -52,7 +52,7 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          fontFamily: "EB Garamond, serif",
+          fontSize: "1.1rem",
         },
       },
     },
