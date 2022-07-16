@@ -16,7 +16,7 @@ export default function Home() {
         ></link>
       </Head>
       <Box
-        className={styles.main}
+        className={`${styles.animation} ${styles.main}`}
         sx={{
           backgroundColor: "black",
           position: "sticky",
@@ -35,6 +35,15 @@ export default function Home() {
           Simplified.`}
           </Typography>
         </Container>
+        <div className={`${styles.trails} ${styles.trail1}`}></div>
+        <div className={`${styles.trails} ${styles.trail2}`}></div>
+        <div className={`${styles.trails} ${styles.trail3}`}></div>
+        <div className={`${styles.trails} ${styles.trail4}`}></div>
+        <div className={`${styles.trails} ${styles.trail5}`}></div>
+        <div className={`${styles.trails} ${styles.trail6}`}></div>
+        <div className={`${styles.trails} ${styles.trail7}`}></div>
+        <div className={`${styles.trails} ${styles.trail8}`}></div>
+        <div className={`${styles.trails} ${styles.trail9}`}></div>
       </Box>
 
       <Box
@@ -46,6 +55,7 @@ export default function Home() {
           <Typography variant="h1" style={{ whiteSpace: "pre-line" }}>
             What is it for.
           </Typography>
+          <Typography>Lorem...</Typography>
         </Container>
       </Box>
 
