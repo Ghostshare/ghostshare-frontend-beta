@@ -1,5 +1,12 @@
-import { Typography } from "@mui/material";
-import { Container, Box } from "@mui/system";
+import {
+  Typography,
+  Grid,
+  Container,
+  Box,
+  Card,
+  CardContent,
+  Button,
+} from "@mui/material";
 import Head from "next/head";
 import Navbar from "../components/Navbar";
 import styles from "../styles/Home.module.css";
@@ -26,14 +33,54 @@ export default function Home() {
       >
         <Navbar color="white" />
         <Container maxWidth="md">
-          <Typography
-            variant="h1"
-            style={{ whiteSpace: "pre-line", color: "white" }}
-          >
-            {`Private 
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid container>
+              <Grid item xs={12} md={6}>
+                <Typography
+                  variant="h1"
+                  sx={{
+                    whiteSpace: "pre-line",
+                    color: "white",
+                    fontSize: { xs: "3rem", md: "5rem" },
+                  }}
+                >
+                  {`Private 
           File Sharing. 
           Simplified.`}
-          </Typography>
+                </Typography>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                md={6}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  paddingLeft: { xs: "0px", md: "50px" },
+                  paddingTop: { xs: "50px", md: "0px" },
+                }}
+              >
+                <Card
+                  sx={{
+                    minHeight: "200px",
+                    zIndex: "10",
+                    display: "flex",
+                    justifyContent: "center",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    borderRadius: "25px",
+                  }}
+                  elevation={3}
+                >
+                  <CardContent>
+                    <Button variant="contained">Upload File</Button>
+                    <Typography>or drop a file</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
         </Container>
         <div className={`${styles.trails} ${styles.trail1}`}></div>
         <div className={`${styles.trails} ${styles.trail2}`}></div>
