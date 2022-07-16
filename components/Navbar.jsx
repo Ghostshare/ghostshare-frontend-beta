@@ -11,12 +11,12 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
+import Image from "next/image";
 
-const pages = ["Products", "Pricing", "Blog"];
+const pages = ["what", "why", "how"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
-const ResponsiveAppBar = () => {
+const Navbar = ({ color }) => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -35,22 +35,40 @@ const ResponsiveAppBar = () => {
     setAnchorElUser(null);
   };
 
+  const setColor = !!color ? { color: color } : { color: "black" };
+  console.log({ setColor });
+
   return (
-    <AppBar position="static">
-      <Container maxWidth="xl">
+    <AppBar
+      position="static"
+      sx={{
+        pt: 2,
+        backgroundColor: "transparent",
+        position: "absolute",
+        position: "absolute",
+        top: 0,
+        zIndex: 100,
+        boxShadow: "none",
+      }}
+    >
+      <Container maxWidth="md">
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+          <Box sx={{ display: { xs: "none", md: "flex" }, mr: 1 }}>
+            <Image
+              src="/ghost-icon.svg"
+              height={50}
+              width={50}
+              alt="Ghost Logo"
+            />
+          </Box>
           <Typography
-            variant="h6"
+            variant="h3"
             noWrap
             component="a"
             href="/"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: ".3rem",
               color: "inherit",
               textDecoration: "none",
             }}
@@ -94,9 +112,17 @@ const ResponsiveAppBar = () => {
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+          <Box sx={{ display: { xs: "flex", md: "none" }, mr: 1 }}>
+            <Image
+              src="/ghost-icon.svg"
+              height={50}
+              width={50}
+              alt="Ghost Logo"
+            />
+          </Box>
+
           <Typography
-            variant="h5"
+            variant="h3"
             noWrap
             component="a"
             href=""
@@ -104,21 +130,33 @@ const ResponsiveAppBar = () => {
               mr: 2,
               display: { xs: "flex", md: "none" },
               flexGrow: 1,
-              fontFamily: "monospace",
               fontWeight: 700,
-              letterSpacing: ".3rem",
               color: "inherit",
               textDecoration: "none",
             }}
           >
-            LOGO
+            GhostShare
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: { xs: "none", md: "flex" },
+              justifyContent: "flex-end",
+            }}
+          >
             {pages.map((page) => (
               <Button
+                size="large"
                 key={page}
+                href={`#${page}`}
                 onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: "white", display: "block" }}
+                sx={{
+                  ...setColor,
+                  my: 2,
+                  mx: 1,
+                  display: "block",
+                  scrollBehavior: "smooth",
+                }}
               >
                 {page}
               </Button>
@@ -166,4 +204,4 @@ const ResponsiveAppBar = () => {
     </AppBar>
   );
 };
-export default ResponsiveAppBar;
+export default Navbar;
