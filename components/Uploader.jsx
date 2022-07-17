@@ -1,5 +1,13 @@
-import { Typography, Card, CardContent, Button, Chip } from "@mui/material";
 import { useEffect, useState } from "react";
+import {
+  Typography,
+  Card,
+  CardContent,
+  Chip,
+  Input,
+  Button,
+} from "@mui/material";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 const styles = {
   wrapper: {
@@ -32,7 +40,7 @@ const styles = {
 };
 
 const Uploader = () => {
-  const [file, setFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [showWrapper, setShowWrapper] = useState(false);
 
   let lastTarget = null;
@@ -66,12 +74,17 @@ const Uploader = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setShowWrapper(false);
-    
-    setFile(e.dataTransfer.files);
+
+    setSelectedFile(e.dataTransfer.files[0]?.name);
   };
 
   const handleDelete = () => {
-    setFile(null);
+    setSelectedFile(null);
+  };
+
+  const handleFileChange = (e) => {
+    console.log(e.target.files[0].name);
+    setSelectedFile(e.target.files[0].name);
   };
 
   return (
@@ -81,22 +94,65 @@ const Uploader = () => {
           minHeight: "200px",
           zIndex: "10",
           display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
-          alignItems: "center",
           borderRadius: "25px",
+          justifyContent: "center",
         }}
         elevation={3}
       >
-        <CardContent>
-          <Button variant="contained">Upload File</Button>
-          <Typography>or drop a file</Typography>
-          {file && (
-            <Chip
-              label={`Your File: ${file[0]?.name}`}
-              variant="outlined"
-              onDelete={handleDelete}
-            />
+        <CardContent
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          {!selectedFile ? (
+            <>
+              <label htmlFor="btn-upload">
+                <Input
+                  id="btn-upload"
+                  type="file"
+                  onChange={handleFileChange}
+                  sx={{ display: "none" }}
+                />
+                <Button
+                  className="btn-choose"
+                  component="span"
+                  variant="outlined"
+                >
+                  Select File
+                </Button>
+              </label>
+              <Typography pt={1}>Or drop a file inside the window.</Typography>
+            </>
+          ) : (
+            <>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  marginTop: "15px",
+                  marginBottom: "15px",
+                }}
+              >
+                <Typography sx={{ fontWeight: "bold", paddingRight: "10px" }}>
+                  Your File
+                </Typography>
+                <Chip
+                  label={selectedFile}
+                  variant="outlined"
+                  onDelete={handleDelete}
+                />
+              </div>
+              <Button
+                variant="contained"
+                size="small"
+                endIcon={<FileUploadIcon />}
+              >
+                Upload File
+              </Button>
+            </>
           )}
         </CardContent>
       </Card>
