@@ -1,14 +1,7 @@
-import {
-  Typography,
-  Grid,
-  Container,
-  Box,
-  Card,
-  CardContent,
-  Button,
-} from "@mui/material";
+import { Typography, Grid, Container, Box } from "@mui/material";
 import Head from "next/head";
 import Navbar from "../components/Navbar";
+import Uploader from "../components/Uploader";
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
@@ -61,23 +54,7 @@ export default function Home() {
                   paddingTop: { xs: "50px", md: "0px" },
                 }}
               >
-                <Card
-                  sx={{
-                    minHeight: "200px",
-                    zIndex: "10",
-                    display: "flex",
-                    justifyContent: "center",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    borderRadius: "25px",
-                  }}
-                  elevation={3}
-                >
-                  <CardContent>
-                    <Button variant="contained">Upload File</Button>
-                    <Typography>or drop a file</Typography>
-                  </CardContent>
-                </Card>
+                <Uploader />
               </Grid>
             </Grid>
           </Box>
@@ -100,7 +77,7 @@ export default function Home() {
       >
         <Container maxWidth="md">
           <Typography variant="h1" style={{ whiteSpace: "pre-line" }}>
-            What is it for.
+            What you can expect.
           </Typography>
           <Typography>Lorem...</Typography>
         </Container>

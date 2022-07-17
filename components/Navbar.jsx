@@ -36,7 +36,6 @@ const Navbar = ({ color }) => {
   };
 
   const setColor = !!color ? { color: color } : { color: "black" };
-  console.log({ setColor });
 
   return (
     <AppBar
