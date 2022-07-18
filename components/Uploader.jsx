@@ -164,7 +164,7 @@ const Uploader = () => {
               Just drop it!
             </Typography>
             <Typography sx={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              Upload your file by drag & drop into this area.
+              Select your file by drag & drop into this area.
             </Typography>
           </div>
 
