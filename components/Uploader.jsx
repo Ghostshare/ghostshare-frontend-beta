@@ -147,6 +147,7 @@ const Uploader = () => {
               </div>
               <Button
                 variant="contained"
+                color="secondary"
                 size="small"
                 endIcon={<FileUploadIcon />}
               >
