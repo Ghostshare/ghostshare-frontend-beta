@@ -94,7 +94,7 @@ const Uploader = () => {
           minHeight: "200px",
           zIndex: "10",
           display: "flex",
-          borderRadius: "25px",
+          borderRadius: "30px",
           justifyContent: "center",
         }}
         elevation={3}
