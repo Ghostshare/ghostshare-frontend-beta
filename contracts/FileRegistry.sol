@@ -1,20 +1,16 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
-
-// import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title FileRegistry for GhostShare.xyz
  * @author Joris Zierold
- * @notice (NOTE OPTIONAL ADD SOME GENERAL INFO)
- * @dev Main contract which handles file tracing and access control.
+ * @dev Main contract, which handles file tracing and access control.
  */
 contract FileRegistry {
     /* ------------------------------ DATA STORAGE ------------------------------ */
-
     struct File {
         address fileOwner;
-        mapping(address => bool) recipients;
+        mapping(address => bool) accessRights;
     }
 
     mapping(bytes32 => File) public files;
@@ -22,30 +18,29 @@ contract FileRegistry {
     /* --------------------------------- EVENTS --------------------------------- */
     event FileRegistered(bytes32 fileId, address indexed fileOwner);
     event AccessGranted(bytes32 fileId, address indexed recipient);
+    event AccessRevoked(bytes32 fileId, address indexed recipient);
 
     /* -------------------------------- MODIFIERS ------------------------------- */
     modifier onlyFileOwner(bytes32 fileId) {
         // requre msg.sender is owner of fileId
         require(
             files[fileId].fileOwner == msg.sender,
-            "FileRegistry::onlyFileOwner: No access for this user."
+            "FileRegistry::onlyFileOwner: You do not have access."
         );
         _;
     }
-
-    /* ------------------------------- CONSTRUCTOR ------------------------------ */
-    constructor() {}
 
     /* -------------------------------------------------------------------------- */
     /*                                  FUNCTIONS                                 */
     /* -------------------------------------------------------------------------- */
 
-    function registerFile(bytes32 fileId) public returns (bool success) {
+    function registerFile(bytes32 fileId) public returns (bool fileRegistered) {
         require(
             files[fileId].fileOwner == address(0),
             "FileRegistry::registerFile: File already exists."
         );
         files[fileId].fileOwner = msg.sender;
+        files[fileId].accessRights[msg.sender] = true;
         emit FileRegistered(fileId, msg.sender);
         return true;
     }
@@ -53,22 +48,36 @@ contract FileRegistry {
     function grantAccess(bytes32 fileId, address recipient)
         public
         onlyFileOwner(fileId)
-        returns (bool success)
+        returns (bool accessGranted)
     {
-        files[fileId].recipients[recipient] = true;
+        require(
+            !files[fileId].accessRights[recipient],
+            "FileRegistry::grantAccess: Recipient is already granted."
+        );
+        files[fileId].accessRights[recipient] = true;
         emit AccessGranted(fileId, recipient);
         return true;
     }
 
-    function hasAccess(bytes32 fileId) public view returns (bool _hasAccess) {
-        return files[fileId].recipients[msg.sender];
+    function revokeAccess(bytes32 fileId, address recipient)
+        public
+        onlyFileOwner(fileId)
+        returns (bool accessRevoked)
+    {
+        require(
+            files[fileId].accessRights[recipient],
+            "FileRegistry::revokeAccess: No access is granted to this Recipient."
+        );
+        files[fileId].accessRights[recipient] = false;
+        emit AccessRevoked(fileId, recipient);
+        return true;
     }
 
-    function helperFunctionToGetBytes32(string memory randomString)
+    function hasAccess(bytes32 fileId, address recipient)
         public
-        pure
-        returns (bytes32)
+        view
+        returns (bool _hasAccess)
     {
-        return keccak256(abi.encode(randomString));
+        return files[fileId].accessRights[recipient];
     }
 }
