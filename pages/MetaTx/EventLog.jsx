@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 import contracts from "../../metadata/deployed_contracts.json";
-import { FileRegistry } from "../../metadata/contracts_ABI.json";
+import ABI from "../../metadata/contracts_ABI.json";
 
 export default function EventLog({ provider }) {
   console.log({ provider });
@@ -17,7 +17,7 @@ export default function EventLog({ provider }) {
       console.log({ provider });
       const fileRegistryContract = new ethers.Contract(
         contracts.FileRegistry,
-        FileRegistry,
+        ABI.FileRegistry,
         provider
       );
 

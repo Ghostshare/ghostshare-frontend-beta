@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import Wallet from "../../components/Wallet";
 import contracts from "../../metadata/deployed_contracts.json";
-import { FileRegistry } from "../../metadata/contracts_ABI.json";
+import ABI from "../../metadata/contracts_ABI.json";
 import { sendMetaTx } from "./fileregistry";
 import EventListener from "./EventLog";
 
@@ -39,7 +39,7 @@ export default function MetaTx() {
 
     const fileRegistryContract = new ethers.Contract(
       contracts.FileRegistry,
-      FileRegistry,
+      ABI.FileRegistry,
       provider
     );
 
@@ -67,7 +67,7 @@ export default function MetaTx() {
 
     const fileRegistryContract = new ethers.Contract(
       contracts.FileRegistry,
-      FileRegistry,
+      ABI.FileRegistry,
       wallet?.provider
     );
     console.log({ event });
