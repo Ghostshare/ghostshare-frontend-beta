@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/metatx/MinimalForwarder.sol";
 
 /**
  * @title FileRegistry for GhostShare.xyz
- * @author Joris Zierold
  * @dev Main contract, which handles file tracing and access control.
  */
 contract FileRegistry is ERC2771Context {
@@ -27,7 +26,7 @@ contract FileRegistry is ERC2771Context {
     modifier onlyFileOwner(bytes32 fileId) {
         // requre msg.sender is owner of fileId
         require(
-            files[fileId].fileOwner == msg.sender,
+            files[fileId].fileOwner == _msgSender(),
             "FileRegistry::onlyFileOwner: You do not have access."
         );
         _;
