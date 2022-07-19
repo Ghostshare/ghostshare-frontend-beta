@@ -60,12 +60,12 @@ export default function EventLog({ provider }) {
             <th>fileId</th>
             <th>fileOwner</th>
           </tr>
-          {registerEvents.map((event) => {
+          {registerEvents.map((event, key) => {
             return (
-              <tr>
-                <td>{event.blockNumber}</td>
-                <td>{event.args[0]}</td>
-                <td>{event.args[1]}</td>
+              <tr key={"registerEvents"}>
+                <td key={key + "registerEvents"}>{event.blockNumber}</td>
+                <td key={key + "registerEvents"}>{event.args[0]}</td>
+                <td key={key + "registerEvents"}>{event.args[1]}</td>
               </tr>
             );
           })}
@@ -79,12 +79,12 @@ export default function EventLog({ provider }) {
             <th>fileId</th>
             <th>fileOwner</th>
           </tr>
-          {accessEvents.map((event) => {
+          {accessEvents.map((event, key) => {
             return (
-              <tr>
-                <td>{event.blockNumber}</td>
-                <td>{event.args[0]}</td>
-                <td>{event.args[1]}</td>
+              <tr key={"accessEvents"}>
+                <td key={key + "accessEvents"}>{event.blockNumber}</td>
+                <td key={key + "accessEvents"}>{event.args[0]}</td>
+                <td key={key + "accessEvents"}>{event.args[1]}</td>
               </tr>
             );
           })}
