@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
+import "@openzeppelin/contracts/metatx/MinimalForwarder.sol";
+
 /**
  * @title FileRegistry for GhostShare.xyz
- * @author Joris Zierold
  * @dev Main contract, which handles file tracing and access control.
  */
-contract FileRegistry {
+contract FileRegistry is ERC2771Context {
     /* ------------------------------ DATA STORAGE ------------------------------ */
     struct File {
         address fileOwner;
@@ -24,11 +26,16 @@ contract FileRegistry {
     modifier onlyFileOwner(bytes32 fileId) {
         // requre msg.sender is owner of fileId
         require(
-            files[fileId].fileOwner == msg.sender,
+            files[fileId].fileOwner == _msgSender(),
             "FileRegistry::onlyFileOwner: You do not have access."
         );
         _;
     }
+
+    /* ------------------------------- CONSTRUCTOR ------------------------------ */
+    constructor(MinimalForwarder forwarder)
+        ERC2771Context(address(forwarder))
+    {}
 
     /* -------------------------------------------------------------------------- */
     /*                                  FUNCTIONS                                 */
@@ -39,9 +46,10 @@ contract FileRegistry {
             files[fileId].fileOwner == address(0),
             "FileRegistry::registerFile: File already exists."
         );
-        files[fileId].fileOwner = msg.sender;
-        files[fileId].accessRights[msg.sender] = true;
-        emit FileRegistered(fileId, msg.sender);
+        address msgSender = _msgSender();
+        files[fileId].fileOwner = msgSender;
+        files[fileId].accessRights[msgSender] = true;
+        emit FileRegistered(fileId, msgSender);
         return true;
     }
 
