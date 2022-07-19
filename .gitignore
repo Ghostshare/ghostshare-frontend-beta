@@ -42,7 +42,7 @@ typechain-types
 cache
 artifacts
 scripts
-hardhat.config.js
+secrets.json
 
 node_modules
 .env
@@ -50,7 +50,3 @@ coverage
 coverage.json
 typechain
 typechain-types
-
-#Hardhat files
-cache
-artifacts
