@@ -3,8 +3,8 @@ import { ethers } from "ethers";
 import Wallet from "../../components/Wallet";
 import contracts from "../../metadata/deployed_contracts.json";
 import ABI from "../../metadata/contracts_ABI.json";
-import { sendMetaTx } from "./fileregistry";
-import EventListener from "./EventLog";
+import { sendMetaTx } from "../../components/MetaTx/fileregistry";
+import EventListener from "../../components/MetaTx/EventLog";
 
 export default function MetaTx() {
   const [fileId, setFileId] = useState(
