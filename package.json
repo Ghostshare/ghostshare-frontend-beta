@@ -17,7 +17,8 @@
     "ethers": "5.6.9",
     "next": "12.2.2",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "yarn": "^1.22.19"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
