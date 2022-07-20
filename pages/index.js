@@ -72,38 +72,46 @@ export default function Home() {
         <div className={`${styles.trails} ${styles.trail7}`}></div>
         <div className={`${styles.trails} ${styles.trail8}`}></div>
         <div className={`${styles.trails} ${styles.trail9}`}></div>
-        <Link href={"#what"}>
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: "-42px",
-              display: { xs: "none", md: "flex" },
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Typography
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: "-42px",
+            display: { xs: "none", md: "flex" },
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Link href={"#what"} sx={{ textDecoration: "none" }}>
+            <Box
               sx={{
-                color: "white",
-                fontSize: "1.1rem",
-                fontWeight: "bold",
-                position: "relative",
-                top: "10px",
-                left: "2px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
               }}
             >
-              learn more
-            </Typography>
-            <Box sx={{ transform: "rotate(180deg)" }}>
-              <Image
-                src="/ghost-icon.svg"
-                height={80}
-                width={80}
-                alt="Ghost Logo"
-              />
+              <Typography
+                sx={{
+                  color: "white",
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  position: "relative",
+                  top: "10px",
+                  left: "2px",
+                }}
+              >
+                learn more
+              </Typography>
+              <Box sx={{ transform: "rotate(180deg)" }}>
+                <Image
+                  src="/ghost-icon.svg"
+                  height={80}
+                  width={80}
+                  alt="Ghost Logo"
+                />
+              </Box>
             </Box>
-          </Box>
-        </Link>
+          </Link>
+        </Box>
       </Box>
 
       <WhatWhyHow />
