@@ -94,7 +94,7 @@ const Uploader = () => {
           minHeight: "200px",
           zIndex: "10",
           display: "flex",
-          borderRadius: "25px",
+          borderRadius: "30px",
           justifyContent: "center",
         }}
         elevation={3}
@@ -147,6 +147,7 @@ const Uploader = () => {
               </div>
               <Button
                 variant="contained"
+                color="secondary"
                 size="small"
                 endIcon={<FileUploadIcon />}
               >
@@ -163,7 +164,7 @@ const Uploader = () => {
               Just drop it!
             </Typography>
             <Typography sx={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              Upload your file by drag & drop into this area.
+              Select your file by drag & drop into this area.
             </Typography>
           </div>
 

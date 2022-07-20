@@ -16,6 +16,17 @@ import Image from "next/image";
 const pages = ["what", "why", "how"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
+const styles = {
+  versionIndicator: {
+    color: "#1c3355",
+    fontSize: "0.9rem",
+    backgroundColor: "white",
+    borderRadius: "12px",
+    height: "21px",
+    padding: "0px 7px",
+  },
+};
+
 const Navbar = ({ color }) => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -36,6 +47,12 @@ const Navbar = ({ color }) => {
   };
 
   const setColor = !!color ? { color: color } : { color: "black" };
+
+  const betaVersion = (
+    <Tooltip title="This application is currently in beta version, which is stable BUT not backed up by external audits. This means that we're opening this app for the purpose that a selected group of people can test our service in order to improve - even though the application  publicly available! Please take this into account when using this service.">
+      <span style={styles.versionIndicator}>beta</span>
+    </Tooltip>
+  );
 
   return (
     <AppBar
@@ -60,20 +77,24 @@ const Navbar = ({ color }) => {
               alt="Ghost Logo"
             />
           </Box>
-          <Typography
-            variant="h3"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: { xs: "none", md: "flex" },
-              color: "inherit",
-              textDecoration: "none",
-            }}
-          >
-            GhostShare
-          </Typography>
+          <Box sx={{ display: { xs: "none", md: "flex" } }}>
+            <div style={{ display: "inline-flex" }}>
+              <Typography
+                variant="h3"
+                noWrap
+                component="a"
+                href="/"
+                sx={{
+                  mr: 1,
+                  color: "inherit",
+                  textDecoration: "none",
+                }}
+              >
+                GhostShare
+              </Typography>
+              {betaVersion}
+            </div>
+          </Box>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
@@ -116,31 +137,26 @@ const Navbar = ({ color }) => {
               ))}
             </Menu>
           </Box>
-          <Box sx={{ display: { xs: "flex", md: "none" }, mr: 1 }}>
-            <Image
-              src="/ghost-icon.svg"
-              height={50}
-              width={50}
-              alt="Ghost Logo"
-            />
+          <Box sx={{ display: { xs: "flex", md: "none" }, flexGrow: 1 }}>
+            <div style={{ display: "inline-flex" }}>
+              <Typography
+                variant="h3"
+                noWrap
+                component="a"
+                href=""
+                sx={{
+                  mr: 1,
+                  fontWeight: 700,
+                  color: "inherit",
+                  textDecoration: "none",
+                }}
+              >
+                GhostShare
+              </Typography>
+              {betaVersion}
+            </div>
           </Box>
 
-          <Typography
-            variant="h3"
-            noWrap
-            component="a"
-            href=""
-            sx={{
-              mr: 2,
-              display: { xs: "flex", md: "none" },
-              flexGrow: 1,
-              fontWeight: 700,
-              color: "inherit",
-              textDecoration: "none",
-            }}
-          >
-            GhostShare
-          </Typography>
           <Box
             sx={{
               flexGrow: 1,

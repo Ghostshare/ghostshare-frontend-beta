@@ -1,17 +1,13 @@
 import { createTheme } from "@mui/material/styles";
-import { red } from "@mui/material/colors";
 
 // Create a theme instance.
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#556cd6",
+      main: "#2b75cd",
     },
     secondary: {
-      main: "#19857b",
-    },
-    error: {
-      main: red.A400,
+      main: "#2a9d8f",
     },
   },
   typography: {
@@ -53,6 +49,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           fontSize: "1.1rem",
+          borderRadius: "30px",
         },
       },
     },
@@ -65,6 +62,13 @@ const theme = createTheme({
           },
         },
       ],
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          fontSize: "0.8rem",
+        },
+      },
     },
   },
 });

@@ -24,7 +24,6 @@ contract FileRegistry is ERC2771Context {
 
     /* -------------------------------- MODIFIERS ------------------------------- */
     modifier onlyFileOwner(bytes32 fileId) {
-        // requre msg.sender is owner of fileId
         require(
             files[fileId].fileOwner == _msgSender(),
             "FileRegistry::onlyFileOwner: You do not have access."
