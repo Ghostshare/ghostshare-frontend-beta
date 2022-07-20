@@ -3,7 +3,7 @@ import { Typography, Grid, Container, Box, Link } from "@mui/material";
 import Head from "next/head";
 import Image from "next/image";
 import Navbar from "../components/Navbar";
-import Uploader from "../components/Uploader";
+import ShareFile from "../components/ShareFile";
 import WhatWhyHow from "../components/WhatWhyHow";
 import styles from "../styles/Home.module.css";
 import Footer from "../components/Footer";
@@ -58,7 +58,7 @@ export default function Home() {
                   paddingTop: { xs: "50px", md: "0px" },
                 }}
               >
-                <Uploader />
+                <ShareFile />
               </Grid>
             </Grid>
           </Box>
@@ -119,5 +119,3 @@ export default function Home() {
     </div>
   );
 }
-
-// transform: rotate(180deg);
