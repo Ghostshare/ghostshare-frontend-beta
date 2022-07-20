@@ -1,9 +1,12 @@
-import { Typography, Grid, Container, Box } from "@mui/material";
+import React from "react";
+import { Typography, Grid, Container, Box, Link } from "@mui/material";
 import Head from "next/head";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Uploader from "../components/Uploader";
 import WhatWhyHow from "../components/WhatWhyHow";
 import styles from "../styles/Home.module.css";
+import Footer from "../components/Footer";
 
 export default function Home() {
   return (
@@ -69,9 +72,44 @@ export default function Home() {
         <div className={`${styles.trails} ${styles.trail7}`}></div>
         <div className={`${styles.trails} ${styles.trail8}`}></div>
         <div className={`${styles.trails} ${styles.trail9}`}></div>
+        <Link href={"#what"}>
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: "-42px",
+              display: { xs: "none", md: "flex" },
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              sx={{
+                color: "white",
+                fontSize: "1.1rem",
+                fontWeight: "bold",
+                position: "relative",
+                top: "10px",
+                left: "2px",
+              }}
+            >
+              learn more
+            </Typography>
+            <Box sx={{ transform: "rotate(180deg)" }}>
+              <Image
+                src="/ghost-icon.svg"
+                height={80}
+                width={80}
+                alt="Ghost Logo"
+              />
+            </Box>
+          </Box>
+        </Link>
       </Box>
+
       <WhatWhyHow />
-      <footer className={styles.footer}>Created with 🖤</footer>
+      <Footer />
     </div>
   );
 }
+
+// transform: rotate(180deg);

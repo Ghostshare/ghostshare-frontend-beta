@@ -12,7 +12,7 @@ const styles = {
     backgroundColor: "white",
     position: "sticky",
     top: 0,
-    boxShadow: "0px -2px 11px 0px #00000052",
+    boxShadow: "0px -6px 10px 0px #00000052",
   },
 };
 
