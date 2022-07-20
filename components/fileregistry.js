@@ -1,5 +1,5 @@
 import { createInstance } from "./forwarder";
-import { signMetaTxRequest } from "../MetaTx/signer";
+import { signMetaTxRequest } from "./MetaTx/signer";
 
 export async function sendMetaTx(mainContract, wallet, method, values) {
   const forwarder = createInstance(wallet?.provider);
