@@ -65,7 +65,7 @@ const styles = {
 const ShareFile = () => {
   const [selectedFile, setSelectedFile] = useState("");
   const [isUploading, setIsUploading] = useState({ status: "false" }); // status: false, true, success, error
-  const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success
+  const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
 
   // TODO DELETE AFTER TESTING
   // NOTE just for testing, changes the states based on drop down menu
@@ -116,6 +116,7 @@ const ShareFile = () => {
 
   const grantAccess = () => {
     console.log("grant access");
+    // TODO add spinner to indicate processing of the tx, more to next state if success
     setIsGranting({ status: "success" });
   };
 
@@ -164,7 +165,7 @@ const ShareFile = () => {
             onChange={handleFileChange}
             sx={{ display: "none" }}
           />
-          <Button className="btn-choose" component="span" variant="outlined">
+          <Button className="btn-choose" component="span" variant="contained">
             Select File
           </Button>
         </label>
