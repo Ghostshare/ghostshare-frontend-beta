@@ -165,7 +165,7 @@ const ShareFile = () => {
             onChange={handleFileChange}
             sx={{ display: "none" }}
           />
-          <Button className="btn-choose" component="span" variant="outlined">
+          <Button className="btn-choose" component="span" variant="contained">
             Select File
           </Button>
         </label>
