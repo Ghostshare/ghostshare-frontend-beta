@@ -31,14 +31,21 @@ export default function Home() {
         <Navbar color="white" />
         <Container maxWidth="md">
           <Box sx={{ flexGrow: 1 }}>
-            <Grid container>
+            <Grid
+              container
+              sx={{
+                display: "flex",
+                alignItems: "flex-start",
+                marginTop: "200px",
+              }}
+            >
               <Grid item xs={12} md={6}>
                 <Typography
                   variant="h1"
                   sx={{
                     whiteSpace: "pre-line",
                     color: "white",
-                    fontSize: { xs: "3rem", md: "5rem" },
+                    fontSize: { xs: "3rem", sm: "4rem", md: "4.7rem" },
                   }}
                 >
                   {`Private 
@@ -54,6 +61,7 @@ export default function Home() {
                   display: "flex",
                   justifyContent: "center",
                   flexDirection: "column",
+                  marginTop: "25px",
                   paddingLeft: { xs: "0px", md: "50px" },
                   paddingTop: { xs: "50px", md: "0px" },
                 }}
