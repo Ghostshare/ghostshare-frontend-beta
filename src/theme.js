@@ -70,6 +70,14 @@ const theme = createTheme({
         },
       },
     },
+    MuiInput: {
+      styleOverrides: {
+        input: {
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+        },
+      },
+    },
   },
 });
 
