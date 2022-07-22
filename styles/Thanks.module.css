@@ -1,0 +1,21 @@
+.main {
+    min-height: 100vh;
+    padding: 4rem 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .animation {
+    background: radial-gradient(#1572cf,#1f1013);
+    -webkit-overflow-Y: hidden;
+    -moz-overflow-Y: hidden;
+    -o-overflow-Y: hidden;
+    overflow-y: hidden;
+  }
+  
+.svgInverted {
+    filter:  brightness(0) invert(1);
+  }
+  
