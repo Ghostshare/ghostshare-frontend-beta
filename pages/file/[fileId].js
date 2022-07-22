@@ -40,7 +40,7 @@ export default function Download() {
               sx={{
                 display: "flex",
                 alignItems: "flex-start",
-                marginTop: "200px",
+                marginTop: "150px",
               }}
             >
               <Grid item xs={12} md={6}>
