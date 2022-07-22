@@ -14,7 +14,6 @@ import MenuItem from "@mui/material/MenuItem";
 import Image from "next/image";
 
 const pages = ["what", "why", "how"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 const styles = {
   versionIndicator: {
@@ -29,21 +28,16 @@ const styles = {
 
 const Navbar = ({ color, shortVersion }) => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-  const handleMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
+  const openDashboard = (event) => {
+    console.log(event.currentTarget);
   };
 
   const setColor = !!color ? { color: color } : { color: "black" };
@@ -197,41 +191,20 @@ const Navbar = ({ color, shortVersion }) => {
 
           <Box sx={{ flexGrow: 0 }}>
             {!shortVersion && (
-              <Tooltip title="Open settings">
+              <Tooltip title="Open Dashboard (com
+              ing soon)">
                 <IconButton
                   size="large"
                   aria-label="account of current user"
                   aria-controls="menu-appbar"
                   aria-haspopup="true"
-                  onClick={handleMenu}
+                  onClick={openDashboard}
                   color="inherit"
                 >
                   <AccountCircle />
                 </IconButton>
               </Tooltip>
             )}
-            <Menu
-              sx={{ mt: "45px" }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
         </Toolbar>
       </Container>
