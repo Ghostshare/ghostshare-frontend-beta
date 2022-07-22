@@ -62,7 +62,7 @@ const styles = {
   },
 };
 
-const ShareFile = () => {
+const ShareFile = ({ setIsUploadStarted }) => {
   const [selectedFile, setSelectedFile] = useState("");
   const [isUploading, setIsUploading] = useState({ status: "false" }); // status: false, true, success, error
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
@@ -74,25 +74,31 @@ const ShareFile = () => {
     if (status === "selectedFile=false") {
       console.log(1);
       setSelectedFile("");
+      setIsUploadStarted(false);
     } else if (status === "selectedFile=true") {
       console.log(2);
       setSelectedFile("somefile.zip");
       setIsUploading({ status: "false" });
+      setIsUploadStarted(false);
     } else if (status === "isUploading=true") {
       setSelectedFile("somefile.zip");
       setIsUploading({ status: "true" });
+      setIsUploadStarted(true);
     } else if (status === "isUploading=success") {
       setSelectedFile("somefile.zip");
       setIsUploading({ status: "success" });
       setIsGranting({ status: "false" });
+      setIsUploadStarted(true);
     } else if (status === "isGranting=true") {
       setSelectedFile("somefile.zip");
       setIsUploading({ status: "success" });
       setIsGranting({ status: "true" });
+      setIsUploadStarted(true);
     } else if (status === "isGranting=success") {
       setSelectedFile("somefile.zip");
       setIsUploading({ status: "success" });
       setIsGranting({ status: "success" });
+      setIsUploadStarted(true);
     }
   };
 
@@ -107,11 +113,13 @@ const ShareFile = () => {
 
   const uploadFile = () => {
     setIsUploading({ status: "true" });
+    setIsUploadStarted(true);
   };
 
   const cancelUpload = () => {
     setSelectedFile("");
     setIsUploading({ status: "false" });
+    setIsUploadStarted(false);
   };
 
   const grantAccess = () => {
@@ -134,6 +142,7 @@ const ShareFile = () => {
     setSelectedFile("");
     setIsUploading({ status: "false" });
     setIsGranting({ status: "false" });
+    setIsUploadStarted(false);
   };
 
   // TODO CID for private link dynamically
@@ -246,7 +255,7 @@ const ShareFile = () => {
         <Box
           sx={{
             height: "255px",
-            paddingTop: "20px",
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -264,7 +273,7 @@ const ShareFile = () => {
             <CheckCircleOutlineIcon sx={{ marginRight: "10px" }} />
             <Typography sx={styles.cardTitle}>Almost done!</Typography>
           </Box>
-          <Typography sx={{ fontWeight: "bold" }}>
+          <Typography sx={{ fontWeight: "bold", textAlign: "center" }}>
             Your file has been successfully uploaded!
           </Typography>
           <Typography>
@@ -374,7 +383,7 @@ const ShareFile = () => {
         <Box
           sx={{
             height: "255px",
-            paddingTop: "20px",
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",

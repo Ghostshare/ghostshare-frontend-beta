@@ -37,7 +37,7 @@ const styles = {
   },
 };
 
-const DownloadFile = ({ fileId }) => {
+const DownloadFile = ({ fileId, setIsRequestStarted }) => {
   const [isFileFound, setIsFileFound] = useState(false);
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
   const [isDownloading, setIsDownloading] = useState(false);
@@ -50,26 +50,32 @@ const DownloadFile = ({ fileId }) => {
       setIsFileFound(false);
       setIsGranting({ status: "false" });
       setIsDownloading(false);
+      setIsRequestStarted(false);
     } else if (status === "isGranting=false") {
       setIsFileFound(true);
       setIsGranting({ status: "false" });
+      setIsRequestStarted(false);
     } else if (status === "isGranting=true") {
       setIsFileFound(true);
       setIsGranting({ status: "true" });
+      setIsRequestStarted(true);
     } else if (status === "isGranting=success") {
       setIsFileFound(true);
       setIsGranting({ status: "success" });
       setIsDownloading(false);
+      setIsRequestStarted(true);
     } else if (status === "isDownloading=true") {
       setIsFileFound(true);
       setIsGranting({ status: "success" });
       setIsDownloading(true);
+      setIsRequestStarted(true);
     }
   };
 
   const requestAccess = () => {
     console.log("request access");
     setIsGranting({ status: "true" });
+    setIsRequestStarted(true);
   };
 
   const startDownload = () => {
@@ -115,8 +121,8 @@ const DownloadFile = ({ fileId }) => {
       <>
         <Box
           sx={{
-            height: "220px",
-            paddingTop: "20px",
+            height: { xs: "200px", md: "220px" },
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -210,8 +216,8 @@ const DownloadFile = ({ fileId }) => {
       <>
         <Box
           sx={{
-            height: "220px",
-            paddingTop: "20px",
+            height: { xs: "200px", md: "220px" },
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -261,8 +267,8 @@ const DownloadFile = ({ fileId }) => {
       <>
         <Box
           sx={{
-            height: "220px",
-            paddingTop: "20px",
+            height: { xs: "200px", md: "220px" },
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
