@@ -27,7 +27,7 @@ const styles = {
   },
 };
 
-const Navbar = ({ color }) => {
+const Navbar = ({ color, shortVersion }) => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
@@ -125,16 +125,22 @@ const Navbar = ({ color }) => {
                 display: { xs: "block", md: "none" },
               }}
             >
-              {pages.map((page) => (
-                <MenuItem
-                  key={page}
-                  onClick={handleCloseNavMenu}
-                  component="a"
-                  href={`#${page}`}
-                >
-                  <Typography textAlign="center">{page}</Typography>
+              {!shortVersion ? (
+                pages.map((page) => (
+                  <MenuItem
+                    key={page}
+                    onClick={handleCloseNavMenu}
+                    component="a"
+                    href={`#${page}`}
+                  >
+                    <Typography textAlign="center">{page}</Typography>
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem onClick={handleCloseNavMenu} component="a" href="/">
+                  <Typography textAlign="center">BACK HOME</Typography>
                 </MenuItem>
-              ))}
+              )}
             </Menu>
           </Box>
           <Box sx={{ display: { xs: "flex", md: "none" }, flexGrow: 1 }}>
@@ -164,38 +170,46 @@ const Navbar = ({ color }) => {
               justifyContent: "flex-end",
             }}
           >
-            {pages.map((page) => (
-              <Button
-                size="large"
-                key={page}
-                href={`#${page}`}
-                onClick={handleCloseNavMenu}
-                sx={{
-                  ...setColor,
-                  my: 2,
-                  mx: 1,
-                  display: "block",
-                  scrollBehavior: "smooth",
-                }}
-              >
-                {page}
-              </Button>
-            ))}
+            {!shortVersion ? (
+              pages.map((page) => (
+                <Button
+                  size="large"
+                  key={page}
+                  href={`#${page}`}
+                  onClick={handleCloseNavMenu}
+                  sx={{
+                    ...setColor,
+                    my: 2,
+                    mx: 1,
+                    display: "block",
+                    scrollBehavior: "smooth",
+                  }}
+                >
+                  {page}
+                </Button>
+              ))
+            ) : (
+              <MenuItem onClick={handleCloseNavMenu} component="a" href="/">
+                <Typography textAlign="center">BACK HOME</Typography>
+              </MenuItem>
+            )}
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton
-                size="large"
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleMenu}
-                color="inherit"
-              >
-                <AccountCircle />
-              </IconButton>
-            </Tooltip>
+            {!shortVersion && (
+              <Tooltip title="Open settings">
+                <IconButton
+                  size="large"
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={handleMenu}
+                  color="inherit"
+                >
+                  <AccountCircle />
+                </IconButton>
+              </Tooltip>
+            )}
             <Menu
               sx={{ mt: "45px" }}
               id="menu-appbar"
