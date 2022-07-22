@@ -19,8 +19,16 @@ contract FileRegistry is ERC2771Context {
 
     /* --------------------------------- EVENTS --------------------------------- */
     event FileRegistered(bytes32 fileId, address indexed fileOwner);
-    event AccessGranted(bytes32 fileId, address indexed recipient);
-    event AccessRevoked(bytes32 fileId, address indexed recipient);
+    event AccessGranted(
+        bytes32 fileId,
+        address indexed fileOwner,
+        address indexed recipient
+    );
+    event AccessRevoked(
+        bytes32 fileId,
+        address indexed fileOwner,
+        address indexed recipient
+    );
 
     /* -------------------------------- MODIFIERS ------------------------------- */
     modifier onlyFileOwner(bytes32 fileId) {
@@ -62,7 +70,7 @@ contract FileRegistry is ERC2771Context {
             "FileRegistry::grantAccess: Recipient is already granted."
         );
         files[fileId].accessRights[recipient] = true;
-        emit AccessGranted(fileId, recipient);
+        emit AccessGranted(fileId, files[fileId].fileOwner, recipient);
         return true;
     }
 
@@ -76,7 +84,7 @@ contract FileRegistry is ERC2771Context {
             "FileRegistry::revokeAccess: No access is granted to this Recipient."
         );
         files[fileId].accessRights[recipient] = false;
-        emit AccessRevoked(fileId, recipient);
+        emit AccessRevoked(fileId, files[fileId].fileOwner, recipient);
         return true;
     }
 
