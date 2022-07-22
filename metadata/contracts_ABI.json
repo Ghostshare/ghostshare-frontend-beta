@@ -23,6 +23,12 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "fileOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "recipient",
           "type": "address"
         }
@@ -38,6 +44,12 @@
           "internalType": "bytes32",
           "name": "fileId",
           "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "fileOwner",
+          "type": "address"
         },
         {
           "indexed": true,
