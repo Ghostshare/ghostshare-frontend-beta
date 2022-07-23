@@ -7,11 +7,13 @@ function Wallet({ wallet, setWallet }) {
 
   const publicKey = wallet?.address;
   const privateKey = wallet?.privateKey;
+  const address = wallet?.address;
   // const mnemonic = wallet?.mnemonic.phrase;
 
   if (typeof window !== "undefined") {
     localStorage.setItem("publicKey", publicKey);
     localStorage.setItem("privateKey", privateKey);
+    localStorage.setItem("address", address);
   }
 
   return (
@@ -20,6 +22,7 @@ function Wallet({ wallet, setWallet }) {
       <button onClick={createAccount}>Create Account</button>
       <p>{`publicKey: ${publicKey}`}</p>
       <p>{`privateKey: ${privateKey}`}</p>
+      <p>{`address: ${address}`}</p>
     </>
   );
 }

@@ -5,8 +5,16 @@ import contracts from "../../metadata/deployed_contracts.json";
 import ABI from "../../metadata/contracts_ABI.json";
 import { sendMetaTx } from "../../components/MetaTx/fileregistry";
 import EventListener from "../../components/MetaTx/EventLog";
+
+// Web3.Storage-Lit-SDK Integration imports
 import { Integration } from 'web3.storage-lit-sdk';
 import { saveAs } from 'file-saver';
+import { SiweMessage } from "lit-siwe";
+import { getAddress } from '@ethersproject/address';
+import { verifyMessage } from "@ethersproject/wallet";
+import { toUtf8Bytes } from "@ethersproject/strings";
+import naclUtil from "tweetnacl-util";
+import nacl from "tweetnacl";
 
 export default function MetaTx() {
   const [fileId, setFileId] = useState(
@@ -21,9 +29,9 @@ export default function MetaTx() {
 
   const web3StorageLitIntegration = new Integration('mumbai');
 
-  const componentDidMount = () => {
-    web3StorageLitIntegration.startLitClient(window);
-  };
+  // const componentDidMount = () => {
+  //   web3StorageLitIntegration.startLitClient(window);
+  // };
 
   useEffect(() => {
     SetProvider(
@@ -99,8 +107,91 @@ export default function MetaTx() {
     }
   };
 
+  /**
+   * Sign the auth message with the user's wallet, and store it in localStorage.  Called by checkAndSignAuthMessage if the user does not have a signature stored.
+   * @param {Object} params
+   * @param {Web3Provider} params.web3 An ethers.js Web3Provider instance
+   * @param {string} params.account The account to sign the message with
+   * @returns {AuthSig} The AuthSig created or retrieved
+   */
+  const signAndSaveAuthMessage = async () => {
+    try {
+      console.log("running signAndSaveAuthMessage");
+      // TODO: pull chainId from context
+      const chainId = "80001";
+      const preparedMessage = {
+        domain: window.location.host,
+        address: getAddress(wallet.address), // convert to EIP-55 format or else SIWE complains
+        uri: window.location.origin,
+        version: "1",
+        chainId,
+      };
+      // if (resources && resources.length > 0) {
+      //   preparedMessage.resources = resources;
+      // }
+      console.log("wallet.address: ", wallet.address);
+      console.log("getAddress(wallet.address): ", getAddress(wallet.address));
+      const message = new SiweMessage(preparedMessage);
+      console.log("SiweMessage", message);
+      const body = message.prepareMessage();
+      const signedResult = await signMessage({
+        body,
+        account: wallet.address,
+      });
+      localStorage.setItem(
+        "lit-auth-signature",
+        JSON.stringify({
+          sig: signedResult.signature,
+          derivedVia: "web3.eth.personal.sign",
+          signedMessage: body,
+          address: getAddress(signedResult.address),
+        })
+      );
+      // store a keypair in localstorage for communication with sgx
+      const commsKeyPair = nacl.box.keyPair();
+      localStorage.setItem(
+        "lit-comms-keypair",
+        JSON.stringify({
+          publicKey: naclUtil.encodeBase64(commsKeyPair.publicKey),
+          secretKey: naclUtil.encodeBase64(commsKeyPair.secretKey),
+        })
+      );
+      console.log("generated and saved lit-comms-keypair");
+    } catch (err) {
+      console.log(err?.message + err?.data?.message || err);
+    } finally {
+      console.log("checkLitSignature");
+    }
+  };
+
+  /**
+   * @typedef {Object} AuthSig
+   * @property {string} sig - The actual hex-encoded signature
+   * @property {string} derivedVia - The method used to derive the signature. Typically "web3.eth.personal.sign"
+   * @property {string} signedMessage - The message that was signed
+   * @property {string} address - The crypto wallet address that signed the message
+   */
+  const signMessage = async ({ body, account }) => {
+    const messageBytes = toUtf8Bytes(body);
+    const signature = await wallet.signMessage(messageBytes);
+    const address = verifyMessage(body, signature);
+    console.log("Signature: ", signature);
+    console.log("address: ", account);
+    console.log("recovered address: ", address);
+    if (address !== account) {
+      const msg = `ruh roh, the user signed with a different address (${address}) then they\'re using with web3 (${account}).  this will lead to confusion.`;
+      console.error(msg);
+      alert(
+        "something seems to be wrong with your wallets message signing.  maybe restart your browser or your wallet.  your recovered sig address does not match your web3 account address"
+      );
+      throw new Error(msg);
+    }
+    return { signature, address };
+  };
+
   useEffect(() => {
     console.log({ wallet });
+    signAndSaveAuthMessage();
   }, [wallet]);
 
   const sendTx = async (event) => {
