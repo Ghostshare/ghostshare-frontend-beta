@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Typography, Grid, Container, Box, Link } from "@mui/material";
 import Head from "next/head";
 import Image from "next/image";
@@ -9,6 +9,17 @@ import styles from "../styles/Home.module.css";
 import Footer from "../components/Footer";
 
 export default function Home() {
+  const [isUploadStarted, setIsUploadStarted] = useState(false);
+
+  const Styles = {
+    heroText: {
+      display: {
+        xs: !isUploadStarted ? "block" : "none",
+        md: "block",
+      },
+    },
+  };
+
   return (
     <div>
       <Head>
@@ -36,21 +47,22 @@ export default function Home() {
               sx={{
                 display: "flex",
                 alignItems: "flex-start",
-                marginTop: "150px",
+                marginTop: { xs: "50px", md: "150px" },
               }}
             >
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={6} sx={Styles.heroText}>
                 <Typography
                   variant="h1"
                   sx={{
                     whiteSpace: "pre-line",
                     color: "white",
+                    textAlign: { xs: "center", md: "left" },
                     fontSize: { xs: "3rem", sm: "4rem", md: "4.7rem" },
                   }}
                 >
                   {`Private 
-          File Sharing. 
-          Simplified.`}
+                      File Sharing. 
+                      Simplified.`}
                 </Typography>
               </Grid>
               <Grid
@@ -66,7 +78,7 @@ export default function Home() {
                   paddingTop: { xs: "50px", md: "0px" },
                 }}
               >
-                <ShareFile />
+                <ShareFile setIsUploadStarted={setIsUploadStarted} />
               </Grid>
             </Grid>
           </Box>

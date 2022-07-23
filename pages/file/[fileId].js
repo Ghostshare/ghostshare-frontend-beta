@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { Typography, Grid, Container, Box, Link } from "@mui/material";
@@ -12,6 +12,16 @@ import styles from "../../styles/Home.module.css";
 export default function Download() {
   const router = useRouter();
   const { fileId } = router.query; // ghostshare.xyz/file/fileId
+  const [isRequestStarted, setIsRequestStarted] = useState(false);
+
+  const Styles = {
+    heroText: {
+      display: {
+        xs: !isRequestStarted ? "block" : "none",
+        md: "block",
+      },
+    },
+  };
 
   return (
     <div>
@@ -40,21 +50,22 @@ export default function Download() {
               sx={{
                 display: "flex",
                 alignItems: "flex-start",
-                marginTop: "150px",
+                textAlign: { xs: "center", md: "left" },
+                marginTop: { xs: "50px", md: "150px" },
               }}
             >
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={6} sx={Styles.heroText}>
                 <Typography
                   variant="h1"
                   sx={{
                     whiteSpace: "pre-line",
                     color: "white",
-                    fontSize: { xs: "3rem", sm: "4rem", md: "4.7rem" },
+                    fontSize: { xs: "2rem", sm: "4rem", md: "4.7rem" },
                   }}
                 >
                   {`Private 
-          File Sharing. 
-          Simplified.`}
+                    File Sharing. 
+                    Simplified.`}
                 </Typography>
               </Grid>
               <Grid
@@ -67,10 +78,13 @@ export default function Download() {
                   flexDirection: "column",
                   marginTop: "25px",
                   paddingLeft: { xs: "0px", md: "50px" },
-                  paddingTop: { xs: "50px", md: "0px" },
+                  paddingTop: { xs: "20px", md: "0px" },
                 }}
               >
-                <DownloadFile fileId={fileId} />
+                <DownloadFile
+                  fileId={fileId}
+                  setIsRequestStarted={setIsRequestStarted}
+                />
               </Grid>
             </Grid>
           </Box>
