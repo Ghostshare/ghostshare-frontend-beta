@@ -139,7 +139,7 @@ const Navbar = ({ color, shortVersion }) => {
                 variant="h3"
                 noWrap
                 component="a"
-                href=""
+                href="/"
                 sx={{
                   mr: 1,
                   fontWeight: 700,
