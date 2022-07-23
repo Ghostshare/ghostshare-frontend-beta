@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Axios from "axios";
+import useLocalStorageState from "use-local-storage-state";
 import {
   Button,
   Container,
@@ -45,27 +46,23 @@ const styles = {
 };
 
 export default function Account() {
-  // TODO get public key from local storage
-  const [userAddress, setUserAddress] = useState(
-    "0x6Dc72847c5F2f0C07354B89dB336410eEc8bb721"
-  );
+  const [userAddress] = useLocalStorageState("publicKey", {
+    ssr: true,
+  });
+  const [privateKey, setPrivateKey] = useLocalStorageState("privateKey");
+
+
   const [userTransactions, setUserTransactions] = useState(null);
   const [sharedFiles, setSharedFiles] = useState(null);
   const [receivedFiles, setReceivedFiles] = useState(null);
 
   const [isPrivateKeyShown, setIsPrivateKeyShown] = useState(false);
-  const [privateKey, setPrivateKey] = useState("");
   const [restoredPrivateKey, setRestoredPrivateKey] = useState("");
 
   const showPrivateKey = () => {
-    // TODO add get key from local storage
-    const key =
-      "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd036415f"; // hardcoded random 64 chars
-    setPrivateKey(key);
     setIsPrivateKeyShown(true);
   };
   const hidePrivateKey = () => {
-    setPrivateKey("");
     setIsPrivateKeyShown(false);
   };
 
@@ -74,6 +71,7 @@ export default function Account() {
   };
   const restorePrivateKey = () => {
     // TODO add get key from local storage
+    setPrivateKey(restoredPrivateKey);
     console.log("new private key set");
   };
 
@@ -339,7 +337,7 @@ export default function Account() {
             <Button
               variant="outlined"
               onClick={restorePrivateKey}
-              disabled={restoredPrivateKey.length !== 64}
+              disabled={restoredPrivateKey.length !== 66}
               sx={{ marginTop: "20px", minWidth: "250px" }}
             >
               Restore Account
