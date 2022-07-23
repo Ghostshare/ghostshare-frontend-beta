@@ -53,9 +53,9 @@ export default function MetaTx() {
       console.log({ cid });
       setCid(cid);
     } catch (err) {
-      console.log(err?.message + err?.data?.message || err);
+      console.log(err);
     } finally {
-      console.log("Done with upload file");
+      console.log("Done with file upload");
     }
   };
 
@@ -66,9 +66,9 @@ export default function MetaTx() {
       const file = await web3StorageLitIntegration.retrieveAndDecryptFile(cid);
       saveAs(file, file.name);
     } catch (err) {
-      console.log(err?.message + err?.data?.message || err);
+      console.log(err);
     } finally {
-      console.log("Done with upload file");
+      console.log("Done with file download");
     }
   };
 
