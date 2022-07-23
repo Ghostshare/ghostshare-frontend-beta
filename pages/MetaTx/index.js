@@ -5,6 +5,8 @@ import contracts from "../../metadata/deployed_contracts.json";
 import ABI from "../../metadata/contracts_ABI.json";
 import { sendMetaTx } from "../../components/MetaTx/fileregistry";
 import EventListener from "../../components/MetaTx/EventLog";
+import { Integration } from 'web3.storage-lit-sdk';
+import { saveAs } from 'file-saver';
 
 export default function MetaTx() {
   const [fileId, setFileId] = useState(
@@ -14,6 +16,14 @@ export default function MetaTx() {
   const [wallet, setWallet] = useState();
   const [provider, SetProvider] = useState(null);
   const [recipientHasAccess, SetRecipientHasAccess] = useState(null);
+  const [file, setFile] = useState();
+  const [cid, setCid] = useState(null);
+
+  const web3StorageLitIntegration = new Integration('polygon');
+
+  const componentDidMount = () => {
+    web3StorageLitIntegration.startLitClient(window);
+  };
 
   useEffect(() => {
     SetProvider(
@@ -22,6 +32,7 @@ export default function MetaTx() {
         process.env.NEXT_PUBLIC_INFURA_API_KEY
       )
     );
+    web3StorageLitIntegration.startLitClient(window);
   }, []);
 
   const handleFileId = (e) => {
@@ -30,6 +41,37 @@ export default function MetaTx() {
 
   const handleRecipient = (e) => {
     setRecipient(e.target.value);
+  };
+
+  const handleFile = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleFileUpload = async (event) => {
+    event.preventDefault();
+    setCid(null);
+    try {
+      const cid = await web3StorageLitIntegration.uploadFile(file);
+      console.log({ cid });
+      setCid(cid);
+    } catch (err) {
+      console.log(err?.message + err?.data?.message || err);
+    } finally {
+      console.log("Done with upload file");
+    }
+  };
+
+  const handleFileDownload = async (event) => {
+    event.preventDefault();
+    try {
+      console.log("Downloading cid : ", cid );
+      const file = await web3StorageLitIntegration.retrieveAndDecryptFile(cid);
+      saveAs(file, file.name);
+    } catch (err) {
+      console.log(err?.message + err?.data?.message || err);
+    } finally {
+      console.log("Done with upload file");
+    }
   };
 
   // Direct, without forwarding contract inbetween
@@ -197,6 +239,25 @@ export default function MetaTx() {
         <p>{`Recipient has access: ${recipientHasAccess}`}</p>
       </div>
       {provider && <EventListener provider={provider} />}
+      <h2>File Sharing Functions (Web3StorageLitIntegration) </h2>
+      <div>
+        <h4>function uploadFile(file)</h4>
+        <label style={{ paddingRight: "10px" }}>File</label>
+        <input
+          type="file"
+          onChange={handleFile}
+          placeholder="File to upload"
+          style={{ width: "500px" }}
+          />
+        <br />
+        <button onClick={handleFileUpload}>Upload File</button>
+        <p>Metadata IPFS link: <a href={`https://${cid}.ipfs.dweb.link`} target="_blank">{cid}</a></p>
+      </div>
+      <div>
+        <h4>retrieveAndDecryptFile(cid)</h4>
+        <p>{`CID: ${cid}`}</p>
+        <button onClick={handleFileDownload}>Download File</button>
+      </div>
     </div>
   );
 }
