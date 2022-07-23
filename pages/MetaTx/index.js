@@ -19,7 +19,7 @@ export default function MetaTx() {
   const [file, setFile] = useState();
   const [cid, setCid] = useState(null);
 
-  const web3StorageLitIntegration = new Integration('polygon');
+  const web3StorageLitIntegration = new Integration('mumbai');
 
   const componentDidMount = () => {
     web3StorageLitIntegration.startLitClient(window);
