@@ -37,7 +37,7 @@ const styles = {
   },
 };
 
-const DownloadFile = ({ fileId }) => {
+const DownloadFile = ({ fileId, setIsRequestStarted }) => {
   const [isFileFound, setIsFileFound] = useState(false);
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
   const [isDownloading, setIsDownloading] = useState(false);
@@ -50,26 +50,32 @@ const DownloadFile = ({ fileId }) => {
       setIsFileFound(false);
       setIsGranting({ status: "false" });
       setIsDownloading(false);
+      setIsRequestStarted(false);
     } else if (status === "isGranting=false") {
       setIsFileFound(true);
       setIsGranting({ status: "false" });
+      setIsRequestStarted(false);
     } else if (status === "isGranting=true") {
       setIsFileFound(true);
       setIsGranting({ status: "true" });
+      setIsRequestStarted(true);
     } else if (status === "isGranting=success") {
       setIsFileFound(true);
       setIsGranting({ status: "success" });
       setIsDownloading(false);
+      setIsRequestStarted(true);
     } else if (status === "isDownloading=true") {
       setIsFileFound(true);
       setIsGranting({ status: "success" });
       setIsDownloading(true);
+      setIsRequestStarted(true);
     }
   };
 
   const requestAccess = () => {
     console.log("request access");
     setIsGranting({ status: "true" });
+    setIsRequestStarted(true);
   };
 
   const startDownload = () => {
@@ -83,7 +89,7 @@ const DownloadFile = ({ fileId }) => {
 
   // NOTE generated emojis are not greatly changing
   const recipientAddress = "0xDE3Af4d2fa609b6E66B9e39B12a649E296f044E7"; // TODO set dynamically
-  const encryptedEmojis = keyToEmojis(recipientAddress.slice(2, 42));
+  const encryptedEmojis = keyToEmojis(recipientAddress);
   // console.log({ encryptedEmojis });
 
   // Set the card content based on the stage in the share file procedure
@@ -115,8 +121,8 @@ const DownloadFile = ({ fileId }) => {
       <>
         <Box
           sx={{
-            height: "220px",
-            paddingTop: "20px",
+            height: { xs: "200px", md: "220px" },
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -210,8 +216,8 @@ const DownloadFile = ({ fileId }) => {
       <>
         <Box
           sx={{
-            height: "220px",
-            paddingTop: "20px",
+            height: { xs: "200px", md: "220px" },
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -261,8 +267,8 @@ const DownloadFile = ({ fileId }) => {
       <>
         <Box
           sx={{
-            height: "220px",
-            paddingTop: "20px",
+            height: { xs: "200px", md: "220px" },
+            paddingTop: { xs: "0px", md: "20px" },
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
