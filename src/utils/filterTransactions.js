@@ -68,8 +68,8 @@ const filterTransactions = (txs, userAddress) => {
     });
   });
   const result = {
-    fileOwnerTransactions: fileOwnerTransactions,
-    recipientTransactions: recipientTransactions,
+    sharedFiles: fileOwnerTransactions,
+    receivedFiled: recipientTransactions,
   };
 
   return result;
