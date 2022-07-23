@@ -12,6 +12,7 @@ import {
   Input,
 } from "@mui/material";
 import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
+import SettingsBackupRestoreOutlinedIcon from "@mui/icons-material/SettingsBackupRestoreOutlined";
 import Navbar from "../../components/Navbar";
 import RadialBackground from "../../components/RadialBackground";
 import filterTransactions from "../../src/utils/filterTransactions";
@@ -54,10 +55,12 @@ export default function Account() {
 
   const [isPrivateKeyShown, setIsPrivateKeyShown] = useState(false);
   const [privateKey, setPrivateKey] = useState("");
+  const [restoredPrivateKey, setRestoredPrivateKey] = useState("");
 
   const showPrivateKey = () => {
     // TODO add get key from local storage
-    const key = "0x6Dc72847c5F2f0C07354B89dB336410eEc8bb721"; // hardcoded something
+    const key =
+      "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd036415f"; // hardcoded random 64 chars
     setPrivateKey(key);
     setIsPrivateKeyShown(true);
   };
@@ -66,19 +69,27 @@ export default function Account() {
     setIsPrivateKeyShown(false);
   };
 
+  const handleInputRestoredPrivateKey = (event) => {
+    setRestoredPrivateKey(event.target.value);
+  };
+  const restorePrivateKey = () => {
+    // TODO add get key from local storage
+    console.log("new private key set");
+  };
+
   // NOTE Covalent API https://www.covalenthq.com/docs/api/#/0/Get%20transactions%20for%20address/USD/1
   const getUserTransactions = async () => {
     try {
       const URL = `https://api.covalenthq.com/v1/80001/address/${userAddress}/transactions_v2/?block-signed-at-asc=true&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
-      console.log({ URL });
       const response = await Axios.get(URL);
-      console.log({ response });
+      // console.log({ response });
       setUserTransactions(response?.data?.data?.items);
     } catch (err) {
       console.log({ err });
     }
   };
 
+  // TODO change useEffect: insert getUserTransactions and trigger based on userPublicKey from localStorage (with hook?)
   useEffect(() => {
     if (userTransactions) {
       const filteredTransactions = filterTransactions(
@@ -89,8 +100,6 @@ export default function Account() {
       setReceivedFiles(filteredTransactions.receivedFiled);
     }
   }, [userTransactions, userAddress]);
-  console.log({ sharedFiles });
-  console.log({ receivedFiles });
 
   return (
     <RadialBackground>
@@ -279,6 +288,7 @@ export default function Account() {
                     color: "white",
                     padding: "10px 20px",
                     marginBottom: "5px",
+                    wordBreak: "break-all",
                   }}
                 >
                   {privateKey}
@@ -295,6 +305,45 @@ export default function Account() {
                 </Button>
               </Box>
             )}
+          </CardContent>
+        </Card>
+
+        <Card sx={{ ...styles.card, marginBottom: "200px" }} elevation={3}>
+          <CardContent sx={styles.cardContent}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                paddingBottom: "10px",
+              }}
+            >
+              <SettingsBackupRestoreOutlinedIcon
+                sx={{ marginRight: "10px", fontSize: "2rem" }}
+              />
+              <Typography sx={styles.cardTitle}>
+                Restore Your Account
+              </Typography>
+            </Box>
+            <Box mt={2} sx={{ maxWidth: "500px" }}>
+              <Typography sx={{ textAlign: "center" }}>
+                Paste the private key inside the field below and restore your
+                account in this browser.
+              </Typography>
+            </Box>
+            <Input
+              placeholder="Your private Key"
+              value={restoredPrivateKey}
+              onChange={handleInputRestoredPrivateKey}
+              sx={{ marginTop: "20px", minWidth: "300px" }}
+            />
+            <Button
+              variant="outlined"
+              onClick={restorePrivateKey}
+              disabled={restoredPrivateKey.length !== 64}
+              sx={{ marginTop: "20px", minWidth: "250px" }}
+            >
+              Restore Account
+            </Button>
           </CardContent>
         </Card>
 
