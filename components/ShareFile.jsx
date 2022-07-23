@@ -151,7 +151,7 @@ const ShareFile = ({ setIsUploadStarted }) => {
 
   // NOTE generated emojis are not greatly changing
   const recipientAddress = "0xDE3Af4d2fa609b6E66B9e39B12a649E296f044E7"; // TODO set dynamically
-  const encryptedEmojis = keyToEmojis(recipientAddress.slice(2, 42));
+  const encryptedEmojis = keyToEmojis(recipientAddress);
   // console.log({ encryptedEmojis });
 
   // Set the card content based on the stage in the share file procedure
@@ -346,7 +346,7 @@ const ShareFile = ({ setIsUploadStarted }) => {
                     marginRight: "10px",
                   }}
                 >
-                  {encryptedEmojis.slice(0, 8)}
+                  {encryptedEmojis}
                 </Box>
 
                 <Tooltip title="Grant Access">
