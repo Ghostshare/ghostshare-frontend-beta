@@ -8,6 +8,7 @@ import {
   CardContent,
   Divider,
   Box,
+  Link,
 } from "@mui/material";
 import Navbar from "../../components/Navbar";
 import RadialBackground from "../../components/RadialBackground";
@@ -23,6 +24,8 @@ const styles = {
     justifyContent: "stretch",
     borderRadius: "30px",
     padding: "0px",
+    paddingRight: "15px",
+    paddingLeft: "15px",
     marginTop: "50px",
   },
   cardContent: {
@@ -87,13 +90,18 @@ export default function Account() {
         >
           Your GhostShare.xyz Account
         </Typography>
+
         <Card sx={styles.card} elevation={3}>
           <CardContent sx={styles.cardContent}>
             <Typography sx={styles.cardTitle}>Shared Files</Typography>
             {sharedFiles?.length ? (
               <>
                 {sharedFiles.map((file) => (
-                  <Box mt={2} key={file.fileId} sx={{ minWidth: "600px" }}>
+                  <Box
+                    mt={2}
+                    key={file.fileId}
+                    sx={{ minWidth: { xs: 0, md: "600px" } }}
+                  >
                     <Typography>
                       <span style={{ fontWeight: "bold" }}>
                         {file.fileId.slice(0, 10) + ".zip"}
@@ -113,17 +121,20 @@ export default function Account() {
                         <Box
                           sx={{
                             letterSpacing: "15px",
-                            fontSize: "1.5rem",
+                            fontSize: { xs: "0.9rem", md: "1.5rem" },
                             borderRadius: "30px",
                             border: "1px solid #e4e4e4",
                             padding: "6px 12px",
                             paddingRight: "0px",
                             marginRight: "10px",
+                            minWidth: "150px",
                           }}
                         >
                           {keyToEmojis(recipient.recipient).slice(0, 8)}
                         </Box>
-                        <Typography>{`Granted at ${recipient.timeGranted}`}</Typography>
+                        <Typography
+                          sx={{ fontSize: "0.8rem" }}
+                        >{`Granted at ${recipient.timeGranted}`}</Typography>
                       </Box>
                     ))}
                   </Box>
@@ -139,6 +150,60 @@ export default function Account() {
             )}
           </CardContent>
         </Card>
+
+        <Card sx={styles.card} elevation={3}>
+          <CardContent sx={styles.cardContent}>
+            <Typography sx={styles.cardTitle}>Received Files</Typography>
+            {receivedFiles?.length ? (
+              <>
+                {receivedFiles.map((file) => (
+                  <Box
+                    mt={2}
+                    key={file.fileId}
+                    sx={{ minWidth: { xs: 0, md: "600px" } }}
+                  >
+                    <Typography>
+                      <span style={{ fontWeight: "bold" }}>
+                        {file.fileId.slice(0, 10) + ".zip"}
+                      </span>{" "}
+                      (Size: 423 MB)
+                    </Typography>
+                    <Divider />
+                    <Box
+                      sx={{
+                        display: { xs: "block", md: "flex" },
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography mt={1} mb={1} pr={1}>
+                        Download at:
+                      </Typography>
+
+                      <Link
+                        href={`https://www.ghostshare.xyz/file/${file.fileId}`}
+                      >
+                        <Typography
+                          sx={{
+                            maxWidth: { xs: "250px", md: "350px" },
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {`https://www.ghostshare.xyz/file/${file.fileId}`}
+                        </Typography>
+                      </Link>
+                    </Box>
+                  </Box>
+                ))}
+              </>
+            ) : (
+              <>
+                <Typography mt={1}>You haven't received a file yet.</Typography>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
         <Button
           variant="contained"
           size="small"
