@@ -11,6 +11,13 @@ import Footer from "../components/Footer";
 export default function Home() {
   const [isUploadStarted, setIsUploadStarted] = useState(false);
 
+  const [shownWalletInfoModal, setShownWalletInfoModal] = useLocalStorageState(
+    "shownWalletInfoModal",
+    {
+      defaultValue: false,
+    }
+  );
+
   const Styles = {
     heroText: {
       display: {
@@ -39,6 +46,7 @@ export default function Home() {
           width: "100%",
         }}
       >
+        
         <Navbar color="white" />
         <Container maxWidth="md">
           <Box sx={{ flexGrow: 1 }}>
