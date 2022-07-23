@@ -36,10 +36,6 @@ const Navbar = ({ color, shortVersion }) => {
     setAnchorElNav(null);
   };
 
-  const openDashboard = (event) => {
-    console.log(event.currentTarget);
-  };
-
   const setColor = !!color ? { color: color } : { color: "black" };
 
   const betaVersion = (
@@ -191,14 +187,13 @@ const Navbar = ({ color, shortVersion }) => {
 
           <Box sx={{ flexGrow: 0 }}>
             {!shortVersion && (
-              <Tooltip title="Open Dashboard (com
-              ing soon)">
+              <Tooltip title="Open Account">
                 <IconButton
                   size="large"
                   aria-label="account of current user"
                   aria-controls="menu-appbar"
                   aria-haspopup="true"
-                  onClick={openDashboard}
+                  href="/account"
                   color="inherit"
                 >
                   <AccountCircle />
