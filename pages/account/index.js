@@ -9,7 +9,9 @@ import {
   Divider,
   Box,
   Link,
+  Input,
 } from "@mui/material";
+import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import Navbar from "../../components/Navbar";
 import RadialBackground from "../../components/RadialBackground";
 import filterTransactions from "../../src/utils/filterTransactions";
@@ -49,6 +51,20 @@ export default function Account() {
   const [userTransactions, setUserTransactions] = useState(null);
   const [sharedFiles, setSharedFiles] = useState(null);
   const [receivedFiles, setReceivedFiles] = useState(null);
+
+  const [isPrivateKeyShown, setIsPrivateKeyShown] = useState(false);
+  const [privateKey, setPrivateKey] = useState("");
+
+  const showPrivateKey = () => {
+    // TODO add get key from local storage
+    const key = "0x6Dc72847c5F2f0C07354B89dB336410eEc8bb721"; // hardcoded something
+    setPrivateKey(key);
+    setIsPrivateKeyShown(true);
+  };
+  const hidePrivateKey = () => {
+    setPrivateKey("");
+    setIsPrivateKeyShown(false);
+  };
 
   // NOTE Covalent API https://www.covalenthq.com/docs/api/#/0/Get%20transactions%20for%20address/USD/1
   const getUserTransactions = async () => {
@@ -200,6 +216,84 @@ export default function Account() {
               <>
                 <Typography mt={1}>You haven't received a file yet.</Typography>
               </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Typography
+          sx={{
+            color: "white",
+            textAlign: "center",
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            marginTop: "50px",
+          }}
+        >
+          Backup or Restore
+        </Typography>
+
+        <Card sx={styles.card} elevation={3}>
+          <CardContent sx={styles.cardContent}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                paddingBottom: "10px",
+              }}
+            >
+              <VpnKeyOutlinedIcon
+                sx={{ marginRight: "10px", fontSize: "2rem" }}
+              />
+              <Typography sx={styles.cardTitle}>Your Account Key</Typography>
+            </Box>
+            <Box mt={2} sx={{ maxWidth: "500px" }}>
+              <Typography sx={{ textAlign: "center" }}>
+                Your <span style={{ fontWeight: "bold" }}>private key</span> is
+                stored in your web browser. If you switch devices, you must{" "}
+                <span style={{ fontWeight: "bold" }}>
+                  restore your private key
+                </span>{" "}
+                to access your balance.
+              </Typography>
+            </Box>
+            {!isPrivateKeyShown ? (
+              <Button
+                variant="outlined"
+                onClick={showPrivateKey}
+                sx={{ marginTop: "20px", minWidth: "250px" }}
+              >
+                Show Private Key
+              </Button>
+            ) : (
+              <Box
+                sx={{
+                  marginTop: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <Box
+                  sx={{
+                    background: " #2b75cd",
+                    color: "white",
+                    padding: "10px 20px",
+                    marginBottom: "5px",
+                  }}
+                >
+                  {privateKey}
+                </Box>
+                <Typography sx={{ fontWeight: "bold" }}>
+                  Store this key at a secure place!
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={hidePrivateKey}
+                  sx={{ marginTop: "20px", minWidth: "250px" }}
+                >
+                  Hide Private Key
+                </Button>
+              </Box>
             )}
           </CardContent>
         </Card>
