@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import Wallet from "../../components/Wallet";
 import contracts from "../../metadata/deployed_contracts.json";
@@ -6,9 +6,9 @@ import ABI from "../../metadata/contracts_ABI.json";
 import { sendMetaTx } from "../../components/MetaTx/fileregistry";
 import EventListener from "../../components/MetaTx/EventLog";
 // Web3.Storage-Lit-SDK Integration imports
-import { Integration } from 'web3.storage-lit-sdk';
-import { saveAs } from 'file-saver';
-import { signAndSaveAuthMessage } from "../../src/utils/signer"
+import { Integration } from "web3.storage-lit-sdk";
+import { saveAs } from "file-saver";
+import { signAndSaveAuthMessage } from "../../src/utils/signer";
 
 export default function MetaTx() {
   const [fileId, setFileId] = useState(
@@ -21,9 +21,9 @@ export default function MetaTx() {
   const [file, setFile] = useState();
   const [cid, setCid] = useState(null);
 
-  const web3StorageLitIntegration = new Integration('mumbai');
+  const web3StorageLitIntegration = new Integration("mumbai");
 
-   useEffect(() => {
+  useEffect(() => {
     SetProvider(
       new ethers.providers.InfuraProvider(
         "maticmum", // Mumbai Testnet
@@ -62,7 +62,7 @@ export default function MetaTx() {
   const handleFileDownload = async (event) => {
     event.preventDefault();
     try {
-      console.log("Downloading cid : ", cid );
+      console.log("Downloading cid : ", cid);
       const file = await web3StorageLitIntegration.retrieveAndDecryptFile(cid);
       saveAs(file, file.name);
     } catch (err) {
@@ -246,10 +246,15 @@ export default function MetaTx() {
           onChange={handleFile}
           placeholder="File to upload"
           style={{ width: "500px" }}
-          />
+        />
         <br />
         <button onClick={handleFileUpload}>Upload File</button>
-        <p>Metadata IPFS link: <a href={`https://${cid}.ipfs.dweb.link`} target="_blank">{cid}</a></p>
+        <p>
+          Metadata IPFS link:{" "}
+          <a href={`https://${cid}.ipfs.dweb.link`} target="_blank">
+            {cid}
+          </a>
+        </p>
       </div>
       <div>
         <h4>retrieveAndDecryptFile(cid)</h4>

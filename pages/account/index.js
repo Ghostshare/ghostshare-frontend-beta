@@ -51,8 +51,6 @@ export default function Account() {
   });
   const [privateKey, setPrivateKey] = useLocalStorageState("privateKey");
 
-
-  const [userTransactions, setUserTransactions] = useState(null);
   const [sharedFiles, setSharedFiles] = useState(null);
   const [receivedFiles, setReceivedFiles] = useState(null);
 
@@ -70,9 +68,7 @@ export default function Account() {
     setRestoredPrivateKey(event.target.value);
   };
   const restorePrivateKey = () => {
-    // TODO add get key from local storage
     setPrivateKey(restoredPrivateKey);
-    console.log("new private key set");
   };
 
   // NOTE Covalent API https://www.covalenthq.com/docs/api/#/0/Get%20transactions%20for%20address/USD/1
@@ -81,23 +77,22 @@ export default function Account() {
       const URL = `https://api.covalenthq.com/v1/80001/address/${userAddress}/transactions_v2/?block-signed-at-asc=true&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
       const response = await Axios.get(URL);
       // console.log({ response });
-      setUserTransactions(response?.data?.data?.items);
+      if (response?.data?.data?.items) {
+        const filteredTransactions = filterTransactions(
+          response?.data?.data?.items,
+          userAddress
+        );
+        setSharedFiles(filteredTransactions.sharedFiles);
+        setReceivedFiles(filteredTransactions.receivedFiled);
+      }
     } catch (err) {
       console.log({ err });
     }
   };
 
-  // TODO change useEffect: insert getUserTransactions and trigger based on userPublicKey from localStorage (with hook?)
   useEffect(() => {
-    if (userTransactions) {
-      const filteredTransactions = filterTransactions(
-        userTransactions,
-        userAddress
-      );
-      setSharedFiles(filteredTransactions.sharedFiles);
-      setReceivedFiles(filteredTransactions.receivedFiled);
-    }
-  }, [userTransactions, userAddress]);
+    getUserTransactions();
+  }, [userAddress]);
 
   return (
     <RadialBackground>

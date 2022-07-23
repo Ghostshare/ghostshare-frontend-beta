@@ -37,9 +37,12 @@ const filterTransactions = (txs, userAddress) => {
 
   txs.forEach((item, index) => {
     item?.log_events.forEach((event, index2) => {
+      let sender_address = event?.sender_address || "";
+      let raw_log_topics_1 = event?.raw_log_topics[1] || "";
+      let raw_log_topics_2 = event?.raw_log_topics[2] || "";
       if (
-        event?.sender_address.toUpperCase() == contractAddress &&
-        event?.raw_log_topics[1].toUpperCase() == userAddressLong // user is fileOwner
+        sender_address.toUpperCase() == contractAddress &&
+        raw_log_topics_1.toUpperCase() == userAddressLong // user is fileOwner
       ) {
         event?.raw_log_topics.length === 2
           ? fileOwnerTransactions.push({
@@ -56,8 +59,8 @@ const filterTransactions = (txs, userAddress) => {
               }
             });
       } else if (
-        event?.sender_address.toUpperCase() == contractAddress &&
-        event?.raw_log_topics[2].toUpperCase() == userAddressLong // user is recipient
+        sender_address.toUpperCase() == contractAddress &&
+        raw_log_topics_2.toUpperCase() == userAddressLong // user is recipient
       ) {
         recipientTransactions.push({
           fileId: event?.raw_log_data,
