@@ -126,13 +126,7 @@ export default function MetaTx() {
         version: "1",
         chainId,
       };
-      // if (resources && resources.length > 0) {
-      //   preparedMessage.resources = resources;
-      // }
-      console.log("wallet.address: ", wallet.address);
-      console.log("getAddress(wallet.address): ", getAddress(wallet.address));
       const message = new SiweMessage(preparedMessage);
-      console.log("SiweMessage", message);
       const body = message.prepareMessage();
       const signedResult = await signMessage({
         body,
