@@ -95,4 +95,9 @@ contract FileRegistry is ERC2771Context {
     {
         return files[fileId].accessRights[recipient];
     }
+
+    /* ----------------------------- HELPER FUNCTION ---------------------------- */
+    function hashHelper(string memory CID) public pure returns (bytes32 hash) {
+        return keccak256(abi.encodePacked(CID));
+    }
 }
