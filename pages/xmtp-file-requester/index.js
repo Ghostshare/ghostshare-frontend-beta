@@ -8,8 +8,12 @@ export default function XMTP() {
   const [provider, setProvider] = useState(null);
   const [xmtpClient, setXmtpClient] = useState(null);
   const [conversation, setConversation] = useState(null);
+  const [fileAccessStatus, setFileAccessStatus] = useState("Not requested");
 
-  const fileCID = "";
+  const fileCID = "bafybeigde3j7gl2ku6v4zqmggdgs3jkc66zaixuh7cqz5jhd7osgvaqt5y";
+  const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-accesss:file-cid:";
+  const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:file-cid:";
+  const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:file-cid:";
 
   useEffect(() => {
     setProvider(
@@ -21,18 +25,19 @@ export default function XMTP() {
     const privateKey = localStorage.getItem("privateKey");
     const wallet = new ethers.Wallet(privateKey, provider);
     setWallet(wallet);
+    const initXmtpClient = async () => {
+      if (!wallet) {
+        console.error("no wallet available");
+        return
+      }
+      setXmtpClient(await Client.create(wallet));
+    };
+    initXmtpClient();
   }, []);
 
   const handleFileOwnerAddress = (e) => {
     setFileOwnerAddress(e.target.value);
   };
-
-  const connectToXmtp = async () => {
-    if (xmtpClient == null) {
-      const xmtpClient = await Client.create(wallet);
-      setXmtpClient(xmtpClient);
-    }
-  }
 
   const connectToFileOwner = async () => {
     if (xmtpClient == null) {
@@ -43,25 +48,72 @@ export default function XMTP() {
       alert("Please enter file owner wallet address");
       return;
     } 
-    console.log("connecting with file owner");
     const conversation = await xmtpClient.conversations.newConversation(fileOwnerAddress);
     setConversation(conversation);
+    // just to trigger the conversation, otherwise the receiver doesn't get any event.    
+  };
+
+  useEffect(() => {
+    if (conversation != null) {
+      sendHi();
+    }
+  }, [conversation]);
+
+  const sendHi = async () => {
+    console.log("sending Hi!");
+    await conversation.send("#Ghostshare:hi!");
   };
 
   const requestAccess = async () => {
     if (conversation != null) {
       console.log("requesting file access");
-      await conversation.send("#Ghostshare:request-accesss:file-cid:" + fileCID);
+      await conversation.send(ghostshareFileAccessRequestPrefix + fileCID);
+      console.log("done requesting file access");
+      waitForFileAccessRequestResponse();
     }
   };
+
+  const waitForFileAccessRequestResponse = async () => {
+    if (xmtpClient == null) {
+      console.warn("Please wait for XMTP Client creation");
+      return;
+    }
+    if (conversation != null) {
+      console.log("waitForFileAccessRequestResponse")      
+      for await (const message of await conversation.streamMessages()) {
+        if (message.senderAddress === xmtpClient.address) {
+          // This message was sent from me
+          continue
+        }
+        console.log(`New message from ${message.senderAddress}: ${message.content}`)
+        if (message.content.startsWith(ghostshareFileAccessGrantedPrefix)) {
+        // If we are processing an access granted message
+          setFileAccessStatus("Access granted");
+          const requestedFileCID = message.content.slice(ghostshareFileAccessRequestPrefix.length);
+          console.log("got access granted to FileCID:", requestedFileCID)
+          // break listening for messages loop since we are done with our request
+          break;
+        } else if (message.content.startsWith(ghostshareFileAccessDeniedPrefix)) {
+          // If we are processing an access denied message
+          setFileAccessStatus("Access denied");          
+          const requestedFileCID = message.content.slice(ghostshareFileAccessDeniedPrefix.length);
+          console.log("got access denied to FileCID:", requestedFileCID)
+          // break listening for messages loop since we are done with our request
+          break;
+        }
+        // Continue listening for messages
+      }
+    }
+  };
+
+  const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+  }
 
   return (
     <div style={{ padding: "50px 100px" }}>
       <h1> XMTP Communication</h1>
       <p>XMTP Connected: {((xmtpClient != null) ? <span style={{color: "green"}}>true</span> : <span style={{color: "red"}}>false</span> )}</p>
-      <button name="connectToXmtp" onClick={connectToXmtp}>
-          Create XMTP Client
-        </button>
       <h3>
         My Wallet: {wallet?.address}
       </h3>
@@ -71,6 +123,7 @@ export default function XMTP() {
         <h3>
           File Owner Wallet: {fileOwnerAddress}
         </h3>
+        <br />
         <label style={{ paddingRight: "10px" }}>File Owner Walet Address</label>
         <input
           value={fileOwnerAddress}
@@ -80,14 +133,16 @@ export default function XMTP() {
         />
         <br />
         <br />
+        <h4>Request access to file: {fileCID}</h4>
         <button name="connectToFileOwner" onClick={connectToFileOwner}>
-          Connect
+          Connect to File Owner
         </button>
-        <br/>
-        <br/>
         <button name="requestAccess" onClick={requestAccess}>
-          RequestAccess
+          Request File Access
         </button>
+        <br/>
+        <p>File acccess status: <span style={{fontWeight: "bold"}}>{fileAccessStatus}</span></p>
+        <br/>
       </div>
       <br/>
       <br/>
