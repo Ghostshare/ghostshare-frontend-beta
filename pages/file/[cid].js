@@ -11,7 +11,7 @@ import styles from "../../styles/Home.module.css";
 
 export default function Download() {
   const router = useRouter();
-  const { fileId } = router.query; // ghostshare.xyz/file/fileId
+  const { cid } = router.query; // ghostshare.xyz/file/cid
   const [isRequestStarted, setIsRequestStarted] = useState(false);
 
   const Styles = {
@@ -82,7 +82,7 @@ export default function Download() {
                 }}
               >
                 <DownloadFile
-                  fileId={fileId}
+                  cid={cid}
                   setIsRequestStarted={setIsRequestStarted}
                 />
               </Grid>

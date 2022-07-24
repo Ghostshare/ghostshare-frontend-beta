@@ -280,6 +280,10 @@ export default function MetaTx() {
         <p>{`CID: ${cid}`}</p>
         <button onClick={handleFileDownload}>Download File</button>
       </div>
+      <input
+        placeholder="cid"
+        onChange={(event) => setCid(event.target.value)}
+      />
     </div>
   );
 }
