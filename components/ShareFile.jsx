@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Integration } from "web3.storage-lit-sdk";
+import { ethers } from "ethers";
 import copy from "copy-to-clipboard";
 import {
   Typography,
@@ -22,6 +24,11 @@ import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+
+import contracts from "../metadata/deployed_contracts.json";
+import ABI from "../metadata/contracts_ABI.json";
+import { signAndSaveAuthMessage } from "../src/utils/signer";
+import { sendMetaTx } from "../components/MetaTx/fileregistry";
 
 import DragAndDrop from "./DragAndDrop";
 import keyToEmojis from "../src/utils/keyToEmojis";
@@ -62,10 +69,29 @@ const styles = {
   },
 };
 
-const ShareFile = ({ setIsUploadStarted }) => {
+const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   const [selectedFile, setSelectedFile] = useState("");
   const [isUploading, setIsUploading] = useState({ status: "false" }); // status: false, true, success, error
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
+  const [CID, setCID] = useState(null);
+  const [provider, SetProvider] = useState(null);
+  const [wallet, setWallet] = useState();
+
+  const web3StorageLitIntegration = new Integration("mumbai");
+
+  useEffect(() => {
+    SetProvider(
+      new ethers.providers.InfuraProvider(
+        "maticmum", // Mumbai Testnet
+        process.env.NEXT_PUBLIC_INFURA_API_KEY
+      )
+    );
+    const privateKey = localStorage.getItem("privateKey");
+    web3StorageLitIntegration.startLitClient(window);
+    const newWallet = new ethers.Wallet(privateKey, provider);
+    setWallet(newWallet);
+    signAndSaveAuthMessage(newWallet, window);
+  }, []);
 
   // TODO DELETE AFTER TESTING
   // NOTE just for testing, changes the states based on drop down menu
@@ -103,21 +129,88 @@ const ShareFile = ({ setIsUploadStarted }) => {
   };
 
   const handleDeleteSelectedFile = () => {
-    setSelectedFile("");
+    setSelectedFile();
   };
 
   const handleFileChange = (e) => {
-    console.log(e.target.files[0].name);
-    setSelectedFile(e.target.files[0].name);
+    console.log(e.target.files[0]);
+    setSelectedFile(e.target.files[0]);
   };
 
-  const uploadFile = () => {
+  const handleFileUpload = async (event) => {
+    event.preventDefault();
+    // Uploads starts --> spinner runs
     setIsUploading({ status: "true" });
     setIsUploadStarted(true);
+    setCID(null);
+    try {
+      // CID belongs to the IPFS Metadata
+      const cid = await web3StorageLitIntegration.uploadFile(selectedFile);
+      console.log({ cid });
+      setCID(cid);
+      // Retrieve fileCid from Metadata
+      const fileMetadata = await retrieveMetaDataFromFirstCid(cid);
+      const fileCid = fileMetadata.fileCid;
+      // sendMetaTx("registerFile")
+      sendTx("registerFile", fileCid);
+      // setUploadIsDone(true) --> spinner stops
+      setIsUploading({ status: "success" });
+    } catch (err) {
+      console.log(err);
+      setIsUploadStarted(false);
+      setIsUploading({ status: "error" });
+    }
+  };
+
+  const hash = async (data) => {
+    const utf8 = new TextEncoder().encode(data);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+      .map((bytes) => bytes.toString(16).padStart(2, "0"))
+      .join("");
+    return "0x" + hashHex;
+  };
+
+  const sendTx = async (method, cid) => {
+    console.log("### STARTED sendTx ###");
+    console.log(method, cid);
+    const fileRegistryContract = new ethers.Contract(
+      contracts.FileRegistry,
+      ABI.FileRegistry,
+      provider
+    );
+
+    try {
+      let value;
+      const hashedFileId = await hash(cid);
+      console.log("hashedFileId: ", hashedFileId);
+      if (method === "registerFile") {
+        value = [hashedFileId];
+      } else if (method === "grantAccess") {
+        value = [hashedFileId, recipient];
+      }
+
+      const privateKey = localStorage.getItem("privateKey");
+      const _wallet = new ethers.Wallet(privateKey, provider);
+
+      const response = await sendMetaTx(
+        fileRegistryContract,
+        _wallet,
+        method,
+        value
+      );
+      console.log({ response });
+    } catch (err) {
+      console.log(err?.message + err?.data?.message || err);
+    } finally {
+      // setSubmitting(false);
+      console.log("### END sendMetaTx ###");
+    }
   };
 
   const cancelUpload = () => {
-    setSelectedFile("");
+    setSelectedFile();
     setIsUploading({ status: "false" });
     setIsUploadStarted(false);
   };
@@ -139,14 +232,14 @@ const ShareFile = ({ setIsUploadStarted }) => {
 
   const resetAllStates = () => {
     console.log("ready to upload another file");
-    setSelectedFile("");
+    setSelectedFile();
     setIsUploading({ status: "false" });
     setIsGranting({ status: "false" });
     setIsUploadStarted(false);
   };
 
   // TODO CID for private link dynamically
-  const CID = "DH749KLLDSOSdsassffs1331adsasds";
+  // const CID = "DH749KLLDSOSdsassffs1331adsasds";
   const shareLink = `www.ghostshare.xyz/file/${CID}`;
 
   // NOTE generated emojis are not greatly changing
@@ -189,7 +282,7 @@ const ShareFile = ({ setIsUploadStarted }) => {
       >
         <Typography sx={styles.cardTitle}>Selected File</Typography>
         <Chip
-          label={selectedFile}
+          label={selectedFile?.name}
           variant="outlined"
           sx={{ marginTop: "20px", marginBottom: "20px", minWidth: "180px" }}
           onDelete={handleDeleteSelectedFile}
@@ -198,7 +291,7 @@ const ShareFile = ({ setIsUploadStarted }) => {
           variant="contained"
           color="secondary"
           size="small"
-          onClick={uploadFile}
+          onClick={handleFileUpload}
           endIcon={<FileUploadIcon />}
           sx={{ minWidth: "180px" }}
         >
@@ -225,7 +318,6 @@ const ShareFile = ({ setIsUploadStarted }) => {
           >
             Uploading in progress..
           </Typography>
-          <Typography>50.3 MB of 423 MB uploaded</Typography>
         </Box>
         <Box
           sx={{
@@ -498,3 +590,5 @@ const ShareFile = ({ setIsUploadStarted }) => {
 };
 
 export default ShareFile;
+
+// hashedFileId 0x6f61c52a2895d6f2ee809c767b9f88dad8dd3bd89985b7457d7dbe1d8f4b8e39

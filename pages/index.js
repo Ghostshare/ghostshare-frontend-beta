@@ -80,7 +80,10 @@ export default function Home() {
                   paddingTop: { xs: "50px", md: "0px" },
                 }}
               >
-                <ShareFile setIsUploadStarted={setIsUploadStarted} />
+                <ShareFile
+                  isUploadStarted={isUploadStarted}
+                  setIsUploadStarted={setIsUploadStarted}
+                />
               </Grid>
             </Grid>
           </Box>
