@@ -75,7 +75,10 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
   const [CID, setCID] = useState(null);
   const [provider, SetProvider] = useState(null);
-  const [wallet, setWallet] = useState();
+
+  const [recipientAddress, setRecipientAddress] = useState(
+    "0x3a973cCC40A2436A518c6C531ADe829d22fde451"
+  ); // TODO set dynamically
 
   const web3StorageLitIntegration = new Integration("mumbai");
 
@@ -89,7 +92,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     const privateKey = localStorage.getItem("privateKey");
     web3StorageLitIntegration.startLitClient(window);
     const newWallet = new ethers.Wallet(privateKey, provider);
-    setWallet(newWallet);
     signAndSaveAuthMessage(newWallet, window);
   }, []);
 
@@ -149,8 +151,11 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       console.log({ cid });
       setCID(cid);
       // Retrieve fileCid from Metadata
-      const fileMetadata = await retrieveMetaDataFromFirstCid(cid);
-      const fileCid = fileMetadata.fileCid;
+      const fileMetadata = await web3StorageLitIntegration.retrieveFileMetadata(
+        cid
+      );
+      const fileCid = fileMetadata?.fileCid;
+      localStorage.setItem("lasFileCid", fileCid);
       // sendMetaTx("registerFile")
       sendTx("registerFile", fileCid);
       // setUploadIsDone(true) --> spinner stops
@@ -172,9 +177,10 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     return "0x" + hashHex;
   };
 
-  const sendTx = async (method, cid) => {
+  const sendTx = async (method, fileCid) => {
     console.log("### STARTED sendTx ###");
-    console.log(method, cid);
+    console.log({ method });
+    console.log({ fileCid });
     const fileRegistryContract = new ethers.Contract(
       contracts.FileRegistry,
       ABI.FileRegistry,
@@ -183,12 +189,12 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
     try {
       let value;
-      const hashedFileId = await hash(cid);
+      const hashedFileId = await hash(fileCid);
       console.log("hashedFileId: ", hashedFileId);
       if (method === "registerFile") {
         value = [hashedFileId];
       } else if (method === "grantAccess") {
-        value = [hashedFileId, recipient];
+        value = [hashedFileId, recipientAddress];
       }
 
       const privateKey = localStorage.getItem("privateKey");
@@ -204,7 +210,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     } catch (err) {
       console.log(err?.message + err?.data?.message || err);
     } finally {
-      // setSubmitting(false);
       console.log("### END sendMetaTx ###");
     }
   };
@@ -215,10 +220,17 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     setIsUploadStarted(false);
   };
 
+  // TODO add spinner to indicate processing of the tx, more to next state if success
+  const [isGrantingRunning, setIsGrantingRunning] = useState(false); // NOTE quick & drity implementation
   const grantAccess = () => {
+    const fileCid = localStorage.getItem("lasFileCid");
     console.log("grant access");
-    // TODO add spinner to indicate processing of the tx, more to next state if success
-    setIsGranting({ status: "success" });
+    setIsGrantingRunning(true);
+    sendTx("grantAccess", fileCid);
+    setTimeout(() => {
+      setIsGrantingRunning(false);
+      setIsGranting({ status: "success" });
+    }, 7000);
   };
 
   const declineAccess = () => {
@@ -238,12 +250,10 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     setIsUploadStarted(false);
   };
 
-  // TODO CID for private link dynamically
-  // const CID = "DH749KLLDSOSdsassffs1331adsasds";
+  // CID for private link dynamically
   const shareLink = `www.ghostshare.xyz/file/${CID}`;
 
   // NOTE generated emojis are not greatly changing
-  const recipientAddress = "0xDE3Af4d2fa609b6E66B9e39B12a649E296f044E7"; // TODO set dynamically
   const encryptedEmojis = keyToEmojis(recipientAddress);
   // console.log({ encryptedEmojis });
 
@@ -440,28 +450,33 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
                 >
                   {encryptedEmojis}
                 </Box>
-
-                <Tooltip title="Grant Access">
-                  <IconButton
-                    size="large"
-                    color="success"
-                    variant="contained"
-                    sx={{ marginRight: "5px" }}
-                    onClick={grantAccess}
-                  >
-                    <ThumbUpOffAltIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Decline Access">
-                  <IconButton
-                    size="large"
-                    color="error"
-                    variant="contained"
-                    onClick={declineAccess}
-                  >
-                    <ThumbDownOffAltIcon />
-                  </IconButton>
-                </Tooltip>
+                {!isGrantingRunning ? (
+                  <>
+                    <Tooltip title="Grant Access">
+                      <IconButton
+                        size="large"
+                        color="success"
+                        variant="contained"
+                        sx={{ marginRight: "5px" }}
+                        onClick={grantAccess}
+                      >
+                        <ThumbUpOffAltIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Decline Access">
+                      <IconButton
+                        size="large"
+                        color="error"
+                        variant="contained"
+                        onClick={declineAccess}
+                      >
+                        <ThumbDownOffAltIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                ) : (
+                  <CircularProgress />
+                )}
               </Box>
             </Box>
           )}
@@ -590,5 +605,3 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 };
 
 export default ShareFile;
-
-// hashedFileId 0x6f61c52a2895d6f2ee809c767b9f88dad8dd3bd89985b7457d7dbe1d8f4b8e39
