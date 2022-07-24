@@ -97,6 +97,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
   // TODO DELETE AFTER TESTING
   // NOTE just for testing, changes the states based on drop down menu
+  const showTestingDropdown = true;
   const updateState = (event) => {
     const status = event.target.value;
     if (status === "selectedFile=false") {
@@ -570,29 +571,31 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   return (
     <>
       {/** TODO DELETE AFTER TESTING */}
-      <div
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          zIndex: 100000,
-        }}
-      >
-        <select name="cars" id="cars" onChange={updateState}>
-          <option value="selectedFile=false">Status: No file Selected</option>
-          <option value="selectedFile=true">
-            Status: File Selected, click Upload
-          </option>
-          <option value="isUploading=true">Status: Is uploading</option>
-          <option value="isUploading=success">
-            Status: Upload successfull, waiting request
-          </option>
-          <option value="isGranting=true">Status: Granting</option>
-          <option value="isGranting=success">
-            Status: Done! Shared successfully
-          </option>
-        </select>
-      </div>
+      {showTestingDropdown && (
+        <div
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            zIndex: 100000,
+          }}
+        >
+          <select name="cars" id="cars" onChange={updateState}>
+            <option value="selectedFile=false">Status: No file Selected</option>
+            <option value="selectedFile=true">
+              Status: File Selected, click Upload
+            </option>
+            <option value="isUploading=true">Status: Is uploading</option>
+            <option value="isUploading=success">
+              Status: Upload successfull, waiting request
+            </option>
+            <option value="isGranting=true">Status: Granting</option>
+            <option value="isGranting=success">
+              Status: Done! Shared successfully
+            </option>
+          </select>
+        </div>
+      )}
       {/** TODO DELETE AFTER TESTING */}
       <Card sx={styles.card} elevation={3}>
         <CardContent sx={styles.cardContent}>{cardContent}</CardContent>
