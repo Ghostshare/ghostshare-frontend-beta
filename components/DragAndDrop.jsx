@@ -67,7 +67,7 @@ const DragAndDrop = ({ setSelectedFile }) => {
     e.preventDefault();
     setShowWrapper(false);
 
-    setSelectedFile(e.dataTransfer.files[0]?.name);
+    setSelectedFile(e?.dataTransfer.files[0]);
   };
 
   if (showWrapper) {
