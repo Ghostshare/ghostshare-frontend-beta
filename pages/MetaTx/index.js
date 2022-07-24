@@ -8,7 +8,6 @@ import EventListener from "../../components/MetaTx/EventLog";
 import { Integration } from "web3.storage-lit-sdk";
 import { saveAs } from "file-saver";
 import { signAndSaveAuthMessage } from "../../src/utils/signer";
-import useLocalStorageState from "use-local-storage-state";
 
 export default function MetaTx() {
   const [fileId, setFileId] = useState(
