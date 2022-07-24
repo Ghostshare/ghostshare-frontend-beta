@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Axios from "axios";
-import useLocalStorageState from "use-local-storage-state";
 import {
   Button,
   Container,
@@ -18,6 +17,7 @@ import Navbar from "../../components/Navbar";
 import RadialBackground from "../../components/RadialBackground";
 import filterTransactions from "../../src/utils/filterTransactions";
 import keyToEmojis from "../../src/utils/keyToEmojis";
+import useLocalStorage from "../../src/hooks/localStorage";
 
 const styles = {
   card: {
@@ -46,10 +46,8 @@ const styles = {
 };
 
 export default function Account() {
-  const [userAddress] = useLocalStorageState("publicKey", {
-    ssr: true,
-  });
-  const [privateKey, setPrivateKey] = useLocalStorageState("privateKey");
+  const [userAddress] = useLocalStorage("publicKey");
+  const [privateKey, setPrivateKey] = useLocalStorage("privateKey");
 
   const [sharedFiles, setSharedFiles] = useState(null);
   const [receivedFiles, setReceivedFiles] = useState(null);
@@ -129,9 +127,11 @@ export default function Account() {
                     </Typography>
                     <Divider />
                     <Typography mt={1} mb={1}>
-                      Shared with:
+                      {file?.recipients.length
+                        ? "Shared with:"
+                        : "Shared with: none yet."}
                     </Typography>
-                    {file.recipients.map((recipient) => (
+                    {file?.recipients.map((recipient) => (
                       <Box
                         mt={1}
                         sx={{ display: "flex", alignItems: "center" }}
@@ -340,20 +340,6 @@ export default function Account() {
             </Button>
           </CardContent>
         </Card>
-
-        <Button
-          variant="contained"
-          size="small"
-          onClick={getUserTransactions}
-          sx={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            zIndex: 10000,
-          }}
-        >
-          tx's
-        </Button>
       </Container>
     </RadialBackground>
   );

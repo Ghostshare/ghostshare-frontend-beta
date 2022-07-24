@@ -1,26 +1,18 @@
 import React from "react";
-import useLocalStorageState from "use-local-storage-state";
 import { ethers } from "ethers";
+import useLocalStorage from "../src/hooks/localStorage";
 
 function GlobalWallet(props) {
   const wallet = ethers.Wallet.createRandom();
 
-  const [privateKey, setPrivateKey, { isPersistent }] = useLocalStorageState(
+  const [privateKey, setPrivateKey] = useLocalStorage(
     "privateKey",
-    {
-      defaultValue: wallet?.privateKey,
-    }
+    wallet?.privateKey
   );
 
-  const [publicKey, setPublicKey] = useLocalStorageState("publicKey", {
-    defaultValue: wallet?.address,
-  });
-
-  const [isStoragePersistent, setIsStoragePersistent] = useLocalStorageState(
-    "isStoragePersistent",
-    {
-      defaultValue: isPersistent,
-    }
+  const [publicKey, setPublicKey] = useLocalStorage(
+    "publicKey",
+    wallet?.address
   );
 
   return <>{props.children}</>;
