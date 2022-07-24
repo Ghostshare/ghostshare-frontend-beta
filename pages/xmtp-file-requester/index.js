@@ -9,11 +9,11 @@ export default function XMTPFileRequester() {
   const [xmtpClient, setXmtpClient] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [fileAccessStatus, setFileAccessStatus] = useState("Not requested");
+  const [fileCID, setFileCID] = useState("");
 
-  const fileCID = "bafybeigde3j7gl2ku6v4zqmggdgs3jkc66zaixuh7cqz5jhd7osgvaqt5y";
-  const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-accesss:file-cid:";
-  const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:file-cid:";
-  const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:file-cid:";
+  const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-access:"; // "#Ghostshare:request-accesss:" + cid + "$" + requester-address
+  const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:"; // "#Ghostshare:accesss-granted:" + cid + "$" + requester-address
+  const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:"; // "#Ghostshare:accesss-denied:" + cid + "$" + requester-address
 
   useEffect(() => {
     setProvider(
@@ -39,6 +39,10 @@ export default function XMTPFileRequester() {
     setFileOwnerAddress(e.target.value);
   };
 
+  const handleFileCID = (e) => {
+    setFileCID(e.target.value);
+  };
+
   const connectToFileOwner = async () => {
     if (xmtpClient == null) {
       alert("Please Create XMTP Client");
@@ -48,15 +52,12 @@ export default function XMTPFileRequester() {
       alert("Please enter file owner wallet address");
       return;
     } 
-    const conversation = await xmtpClient.conversations.newConversation(fileOwnerAddress);
-    setConversation(conversation);
-    // just to trigger the conversation, otherwise the receiver doesn't get any event.    
+    setConversation(await xmtpClient.conversations.newConversation(fileOwnerAddress));
   };
 
   useEffect(() => {
-    if (conversation != null) {
-      sendHi();
-    }
+    if (conversation == null) return;
+    sendHi();
   }, [conversation]);
 
   const sendHi = async () => {
@@ -66,9 +67,9 @@ export default function XMTPFileRequester() {
 
   const requestAccess = async () => {
     if (conversation != null) {
-      console.log("requesting file access");
-      await conversation.send(ghostshareFileAccessRequestPrefix + fileCID);
-      console.log("done requesting file access");
+      const reqMsg = ghostshareFileAccessRequestPrefix + fileCID + "$" + wallet?.address;
+      console.log("requesting file access:", reqMsg);
+      await conversation.send(reqMsg);
       waitForFileAccessRequestResponse();
     }
   };
@@ -133,10 +134,20 @@ export default function XMTPFileRequester() {
         />
         <br />
         <br />
-        <h4>Request access to file: {fileCID}</h4>
+        <label style={{ paddingRight: "10px" }}>Request access to file</label>
+        <input
+          value={fileCID}
+          placeholder="encrypted file cid"
+          style={{ width: "500px" }}
+          onChange={handleFileCID}
+        />
+        <br />
+        <br />
         <button name="connectToFileOwner" onClick={connectToFileOwner}>
           Connect to File Owner
         </button>
+        <br />
+        <br />
         <button name="requestAccess" onClick={requestAccess}>
           Request File Access
         </button>

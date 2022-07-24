@@ -33,6 +33,8 @@ import { sendMetaTx } from "../components/MetaTx/fileregistry";
 import DragAndDrop from "./DragAndDrop";
 import keyToEmojis from "../src/utils/keyToEmojis";
 
+import { Client } from '@xmtp/xmtp-js';
+
 const styles = {
   card: {
     minHeight: "200px",
@@ -69,12 +71,22 @@ const styles = {
   },
 };
 
+const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-access:"; // "#Ghostshare:request-accesss:" + cid + "$" + requester-address
+const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:"; // "#Ghostshare:accesss-granted:" + cid + "$" + requester-address
+const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:"; // "#Ghostshare:accesss-denied:" + cid + "$" + requester-address
+
 const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   const [selectedFile, setSelectedFile] = useState("");
   const [isUploading, setIsUploading] = useState({ status: "false" }); // status: false, true, success, error
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
   const [CID, setCID] = useState(null);
   const [provider, SetProvider] = useState(null);
+  // XMTP related
+  const [xmtpClient, setXmtpClient] = useState(null);
+  const [conversation, setConversation] = useState(null);
+  const [sharedFileCID, setSharedFileCID] = useState("");
+  const [stream, setStream] = useState(null);
+  const [fileRequestInfo, setFileRequestInfo] = useState(null);
 
   const [recipientAddress, setRecipientAddress] = useState(
     "0x3a973cCC40A2436A518c6C531ADe829d22fde451"
@@ -93,7 +105,105 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     web3StorageLitIntegration.startLitClient(window);
     const newWallet = new ethers.Wallet(privateKey, provider);
     signAndSaveAuthMessage(newWallet, window);
+    const initXmtpClient = async () => {
+      if (!newWallet) {
+        console.error("no wallet available");
+        return;
+      }
+      setXmtpClient(await Client.create(newWallet));
+    }
+    initXmtpClient()
   }, []);
+
+  // Start - XMTP logic
+
+  useEffect(() => {
+    if (sharedFileCID == '') return;
+    waitForFileAccessRequest();
+  }, [sharedFileCID]);
+
+  const waitForFileAccessRequest = async () => {
+    if (xmtpClient == null) {
+      console.warn("Please wait for XMTP Client creation");
+      return;
+    }
+    console.log("waitForFileAccessRequest");
+    setStream(await xmtpClient.conversations.stream());
+  }
+
+  useEffect(() => {
+    if (stream == null) return;
+    processStream();
+  }, [stream]);
+  
+  const processStream = async () => {
+    console.log("processing stream");
+    for await (const newConvo of stream) {
+      setConversation(newConvo);
+      console.log(`New conversation started with ${newConvo.peerAddress}`)
+      break;
+    }
+  };
+    
+  useEffect(() => {
+    if (conversation == null) return;
+    listenToConversation();
+  }, [conversation]);
+  
+  const listenToConversation = async () => {
+    for await (const message of await conversation.streamMessages()) {
+      if (message.senderAddress === xmtpClient.address) {
+        // This message was sent from me
+        continue
+      }
+      console.log(`New message from ${message.senderAddress}: ${message.content}`)
+      if (message.content.startsWith(ghostshareFileAccessRequestPrefix)) {
+        const requestPayload = message.content
+          .slice(ghostshareFileAccessRequestPrefix.length)
+          .split("$");
+        const requestedFileCID = requestPayload[0];
+        const requesterAddress = requestPayload[1];
+        console.log("requestedFileCID:", requestedFileCID);
+        console.log("sharedFileCID:", sharedFileCID);
+        if (requestedFileCID.toLowerCase() == sharedFileCID.toLowerCase()) {
+          console.log("setting setFileRequestInfo");
+          setFileRequestInfo({requestedFileCID, requesterAddress});
+        } else {
+          console.log("requestedFileCID and sharedFileCID dont' match");
+        }
+        // break;
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (fileRequestInfo == null) return;
+    console.log("fileRequestInfo: ", fileRequestInfo);
+    setIsGranting({ status: "true" });
+    setIsGrantingRunning(false);
+  }, [fileRequestInfo]);
+  
+  const sendAccessGrantedMsg = async () => {
+    if (conversation == null) {
+      console.warn("Please wait for conversation to be setup");
+      return;
+    }
+    const grantMsg = ghostshareFileAccessGrantedPrefix + fileRequestInfo.requestedFileCID + "$" + fileRequestInfo.requesterAddress;
+    console.log("grant access msg:", grantMsg);
+    conversation.send(grantMsg);
+  }
+
+  const sendAccessDeniedMsg = async () => {
+    if (conversation == null) {
+      console.warn("Please wait for conversation to be setup");
+      return;
+    }
+    const denyMsg = ghostshareFileAccessDeniedPrefix + fileRequestInfo.requestedFileCID + "$" + fileRequestInfo.requesterAddress;
+    console.log("deny access msg:", denyMsg);
+    conversation.send(denyMsg);
+  }
+
+  // End - XMTP logic
 
   // TODO DELETE AFTER TESTING
   // NOTE just for testing, changes the states based on drop down menu
@@ -161,6 +271,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       sendTx("registerFile", fileCid);
       // setUploadIsDone(true) --> spinner stops
       setIsUploading({ status: "success" });
+      setSharedFileCID(fileCid);
     } catch (err) {
       console.log(err);
       setIsUploadStarted(false);
@@ -223,20 +334,24 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
   // TODO add spinner to indicate processing of the tx, more to next state if success
   const [isGrantingRunning, setIsGrantingRunning] = useState(false); // NOTE quick & drity implementation
-  const grantAccess = () => {
+  const grantAccess = async () => {
     const fileCid = localStorage.getItem("lasFileCid");
     console.log("grant access");
     setIsGrantingRunning(true);
-    sendTx("grantAccess", fileCid);
+    await sendTx("grantAccess", fileCid);
+    await sendAccessGrantedMsg()
     setTimeout(() => {
       setIsGrantingRunning(false);
       setIsGranting({ status: "success" });
     }, 7000);
   };
 
-  const declineAccess = () => {
+  const declineAccess = async () => {
     console.log("decline access");
-    setIsGranting({ status: "false" });
+    await sendAccessDeniedMsg();
+    setTimeout(() => {
+      setIsGranting({ status: "false" });
+    }, 3000);
   };
 
   const openDashboard = () => {

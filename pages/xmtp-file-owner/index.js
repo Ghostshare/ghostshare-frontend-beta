@@ -10,7 +10,7 @@ export default function XMTPFileOwner() {
   const [requestedFileCID, setRequestedFileCID] = useState("");
   const [stream, setStream] = useState(null);
 
-  const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-accesss:file-cid:";
+  const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-access:file-cid:";
   const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:file-cid:";
   const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:file-cid:";
   useEffect(() => {
@@ -35,15 +35,15 @@ export default function XMTPFileOwner() {
   
   useEffect(() => {
     if (xmtpClient == null) return;
-    waitForConversation();
+    waitForFileAccessRequest();
   }, [xmtpClient]);
   
-  const waitForConversation = async () => {
+  const waitForFileAccessRequest = async () => {
     if (xmtpClient == null) {
       console.warn("Please wait for XMTP Client creation");
       return;
     }
-    console.log("waitForConversation");
+    console.log("waitForFileAccessRequest");
     setStream(await xmtpClient.conversations.stream());
   }
   
