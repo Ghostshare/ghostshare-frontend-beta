@@ -38,6 +38,15 @@ export default function XMTPFileOwner() {
     waitForConversation();
   }, [xmtpClient]);
   
+  const waitForConversation = async () => {
+    if (xmtpClient == null) {
+      console.warn("Please wait for XMTP Client creation");
+      return;
+    }
+    console.log("waitForConversation");
+    setStream(await xmtpClient.conversations.stream());
+  }
+  
   useEffect(() => {
     if (stream == null) return;
     processStream();
@@ -51,16 +60,6 @@ export default function XMTPFileOwner() {
       break;
     }
   };
-
-  const waitForConversation = async () => {
-    if (xmtpClient == null) {
-      console.warn("Please wait for XMTP Client creation");
-      return;
-    }
-    console.log("waitForConversation")
-    const stream = await xmtpClient.conversations.stream()
-    setStream(stream);
-  }
     
   useEffect(() => {
     if (conversation == null) return;
