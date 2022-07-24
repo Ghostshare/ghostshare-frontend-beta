@@ -68,6 +68,7 @@ export default function Account() {
     setRestoredPrivateKey(event.target.value);
   };
   const restorePrivateKey = () => {
+    setRestoredPrivateKey("");
     setPrivateKey(restoredPrivateKey);
   };
 

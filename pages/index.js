@@ -7,16 +7,10 @@ import ShareFile from "../components/ShareFile";
 import WhatWhyHow from "../components/WhatWhyHow";
 import styles from "../styles/Home.module.css";
 import Footer from "../components/Footer";
+import WalletInfoModal from "../components/WalletInfoModal";
 
 export default function Home() {
   const [isUploadStarted, setIsUploadStarted] = useState(false);
-
-  const [shownWalletInfoModal, setShownWalletInfoModal] = useLocalStorageState(
-    "shownWalletInfoModal",
-    {
-      defaultValue: false,
-    }
-  );
 
   const Styles = {
     heroText: {
@@ -46,7 +40,7 @@ export default function Home() {
           width: "100%",
         }}
       >
-        
+        <WalletInfoModal />
         <Navbar color="white" />
         <Container maxWidth="md">
           <Box sx={{ flexGrow: 1 }}>
