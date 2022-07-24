@@ -22,18 +22,19 @@
     "axios": "^0.27.2",
     "base64-emoji": "^2.1.0",
     "copy-to-clipboard": "^3.3.1",
+    "crypto-js": "^4.1.1",
     "ethers": "5.6.9",
     "file-saver": "^2.0.5",
     "next": "12.2.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "web3.storage-lit-sdk": "^0.1.23",
-    "use-local-storage-state": "^18.1.0"
+    "use-local-storage-state": "^18.1.0",
+    "web3.storage-lit-sdk": "^0.1.24"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
-    "@ethersproject/providers": "^5.4.7",
     "@ethersproject/address": "^5.4.7",
+    "@ethersproject/providers": "^5.4.7",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox": "^1.0.1",

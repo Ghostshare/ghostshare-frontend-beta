@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import Wallet from "../../components/Wallet";
 import contracts from "../../metadata/deployed_contracts.json";
 import ABI from "../../metadata/contracts_ABI.json";
 import { sendMetaTx } from "../../components/MetaTx/fileregistry";
@@ -9,10 +8,11 @@ import EventListener from "../../components/MetaTx/EventLog";
 import { Integration } from "web3.storage-lit-sdk";
 import { saveAs } from "file-saver";
 import { signAndSaveAuthMessage } from "../../src/utils/signer";
+import useLocalStorageState from "use-local-storage-state";
 
 export default function MetaTx() {
   const [fileId, setFileId] = useState(
-    "0x9c1e500a0e7502529e0b46816631158cd26142c7bc1468ef96f8781ce631a9ac"
+    "bafybeidwlo6uvtph7weehkzi3p4fl4ll2rss3vdkyllqypuzioamg4kp7i"
   ); // hardcode a random fileId
   const [recipient, setRecipient] = useState("");
   const [wallet, setWallet] = useState();
@@ -20,7 +20,7 @@ export default function MetaTx() {
   const [recipientHasAccess, SetRecipientHasAccess] = useState(null);
   const [file, setFile] = useState();
   const [cid, setCid] = useState(null);
-
+  
   const web3StorageLitIntegration = new Integration("mumbai");
 
   useEffect(() => {
@@ -31,6 +31,10 @@ export default function MetaTx() {
       )
     );
     web3StorageLitIntegration.startLitClient(window);
+    const privateKey = localStorage.getItem("privateKey");
+    const wallet = new ethers.Wallet(privateKey, provider);
+    setWallet(wallet);
+    signAndSaveAuthMessage(wallet, window);
   }, []);
 
   const handleFileId = (e) => {
@@ -82,10 +86,11 @@ export default function MetaTx() {
       ABI.FileRegistry,
       provider
     );
-
+    const hashedFileId = await hash(fileId);
+    console.log("hashedFileId: ", hashedFileId);
     try {
       const _hasAccess = await fileRegistryContract.hasAccess(
-        fileId,
+        hashedFileId,
         recipient
       );
       console.log({ _hasAccess });
@@ -97,9 +102,15 @@ export default function MetaTx() {
     }
   };
 
-  useEffect(() => {
-    signAndSaveAuthMessage(wallet, window);
-  }, [wallet]);
+  const hash = async (data) => {
+    const utf8 = new TextEncoder().encode(data);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+      .map((bytes) => bytes.toString(16).padStart(2, '0'))
+      .join('');
+    return "0x"+hashHex;
+  };
 
   const sendTx = async (event) => {
     event.preventDefault();
@@ -108,18 +119,20 @@ export default function MetaTx() {
     const fileRegistryContract = new ethers.Contract(
       contracts.FileRegistry,
       ABI.FileRegistry,
-      wallet?.provider
+      provider
     );
     console.log({ event });
 
     let method;
     let value;
+    const hashedFileId = await hash(fileId);
+    console.log("hashedFileId: ", hashedFileId);
     if (event.target.name === "registerFile") {
       method = "registerFile";
-      value = [fileId];
+      value = [hashedFileId];
     } else if (event.target.name === "grantAccess") {
       method = "grantAccess";
-      value = [fileId, recipient];
+      value = [hashedFileId, recipient];
     }
     console.log({ method, value });
     console.log({ fileRegistryContract });
@@ -173,7 +186,9 @@ export default function MetaTx() {
           {contracts.MinimalForwarder}
         </a>
       </p>
-      <Wallet wallet={wallet} setWallet={setWallet} />
+      <p>
+        Wallet: {wallet?.address}
+      </p>
       <h2>State Changing Functions (Gasless / MetaTx)</h2>
       <div>
         <h4>
