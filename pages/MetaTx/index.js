@@ -19,7 +19,7 @@ export default function MetaTx() {
   const [recipientHasAccess, SetRecipientHasAccess] = useState(null);
   const [file, setFile] = useState();
   const [cid, setCid] = useState(null);
-  
+
   const web3StorageLitIntegration = new Integration("mumbai");
 
   useEffect(() => {
@@ -29,8 +29,9 @@ export default function MetaTx() {
         process.env.NEXT_PUBLIC_INFURA_API_KEY
       )
     );
-    web3StorageLitIntegration.startLitClient(window);
     const privateKey = localStorage.getItem("privateKey");
+    console.log(privateKey, privateKey.length);
+    web3StorageLitIntegration.startLitClient(window);
     const wallet = new ethers.Wallet(privateKey, provider);
     setWallet(wallet);
     signAndSaveAuthMessage(wallet, window);
@@ -50,28 +51,34 @@ export default function MetaTx() {
 
   const handleFileUpload = async (event) => {
     event.preventDefault();
+    // Uploads starts --> spinner runs
     setCid(null);
     try {
+      // CID belongs to the IPFS Metadata
       const cid = await web3StorageLitIntegration.uploadFile(file);
       console.log({ cid });
       setCid(cid);
+      // sendTx("registerFile")
+      // setUploadIsDone(true)
+      // spinner stops
     } catch (err) {
       console.log(err);
-    } finally {
-      console.log("Done with file upload");
     }
   };
 
   const handleFileDownload = async (event) => {
     event.preventDefault();
+    // downloads starts -> spinner runs
     try {
       console.log("Downloading cid : ", cid);
+      // MISSING: retrieve meta data to render
       const file = await web3StorageLitIntegration.retrieveAndDecryptFile(cid);
+      console.log({ file });
       saveAs(file, file.name);
+      // setDownloadIsDone(true)
+      // spinner stops
     } catch (err) {
       console.log(err);
-    } finally {
-      console.log("Done with file download");
     }
   };
 
@@ -103,12 +110,12 @@ export default function MetaTx() {
 
   const hash = async (data) => {
     const utf8 = new TextEncoder().encode(data);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", utf8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray
-      .map((bytes) => bytes.toString(16).padStart(2, '0'))
-      .join('');
-    return "0x"+hashHex;
+      .map((bytes) => bytes.toString(16).padStart(2, "0"))
+      .join("");
+    return "0x" + hashHex;
   };
 
   const sendTx = async (event) => {
@@ -185,9 +192,7 @@ export default function MetaTx() {
           {contracts.MinimalForwarder}
         </a>
       </p>
-      <p>
-        Wallet: {wallet?.address}
-      </p>
+      <p>Wallet: {wallet?.address}</p>
       <h2>State Changing Functions (Gasless / MetaTx)</h2>
       <div>
         <h4>
