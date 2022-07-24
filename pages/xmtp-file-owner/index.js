@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { Client } from '@xmtp/xmtp-js';
 
-export default function XMTP() {
+export default function XMTPFileOwner() {
   const [wallet, setWallet] = useState();
   const [provider, setProvider] = useState(null);
   const [xmtpClient, setXmtpClient] = useState(null);
