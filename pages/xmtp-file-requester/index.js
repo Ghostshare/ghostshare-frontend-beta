@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { Client } from '@xmtp/xmtp-js';
+import { Client } from "@xmtp/xmtp-js";
+import { getXmtpEnv } from "../../src/utils/xmtp/xmtp-env";
+import * as GSXmtpMsgProtocol from "../../src/utils/xmtp/xmtp-msg-protocol"
 
 export default function XMTPFileRequester() {
   const [fileOwnerAddress, setFileOwnerAddress] = useState("");
@@ -10,10 +12,6 @@ export default function XMTPFileRequester() {
   const [conversation, setConversation] = useState(null);
   const [fileAccessStatus, setFileAccessStatus] = useState("Not requested");
   const [fileCID, setFileCID] = useState("");
-
-  const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-access:"; // "#Ghostshare:request-accesss:" + cid + "$" + requester-address
-  const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:"; // "#Ghostshare:accesss-granted:" + cid + "$" + requester-address
-  const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:"; // "#Ghostshare:accesss-denied:" + cid + "$" + requester-address
 
   useEffect(() => {
     setProvider(
@@ -30,7 +28,8 @@ export default function XMTPFileRequester() {
         console.error("no wallet available");
         return
       }
-      setXmtpClient(await Client.create(wallet));
+      console.log("XMTP env: ", getXmtpEnv());
+      setXmtpClient(await Client.create(wallet, { env: getXmtpEnv() }));
     };
     initXmtpClient();
   }, []);
@@ -67,7 +66,7 @@ export default function XMTPFileRequester() {
 
   const requestAccess = async () => {
     if (conversation != null) {
-      const reqMsg = ghostshareFileAccessRequestPrefix + fileCID + "$" + wallet?.address;
+      const reqMsg = GSXmtpMsgProtocol.buildFileAccessRequestMessage(fileCID, wallet?.address);
       console.log("requesting file access:", reqMsg);
       await conversation.send(reqMsg);
       waitForFileAccessRequestResponse();
@@ -87,18 +86,18 @@ export default function XMTPFileRequester() {
           continue
         }
         console.log(`New message from ${message.senderAddress}: ${message.content}`)
-        if (message.content.startsWith(ghostshareFileAccessGrantedPrefix)) {
+        if (GSXmtpMsgProtocol.isFileAccessGrantedMessage(message)) {
         // If we are processing an access granted message
           setFileAccessStatus("Access granted");
-          const requestedFileCID = message.content.slice(ghostshareFileAccessRequestPrefix.length);
-          console.log("got access granted to FileCID:", requestedFileCID)
+          const payloadData = GSXmtpMsgProtocol.extractFileAccessGrantedData(message);
+          console.log("got access granted to FileCID:", payloadData.requestedFileCID)
           // break listening for messages loop since we are done with our request
           break;
-        } else if (message.content.startsWith(ghostshareFileAccessDeniedPrefix)) {
+        } else if (GSXmtpMsgProtocol.isFileAccessDeniedMessage(message)) {
           // If we are processing an access denied message
           setFileAccessStatus("Access denied");          
-          const requestedFileCID = message.content.slice(ghostshareFileAccessDeniedPrefix.length);
-          console.log("got access denied to FileCID:", requestedFileCID)
+          const payloadData = GSXmtpMsgProtocol.extractFileAccessDeniedData(message);
+          console.log("got access denied to FileCID:", payloadData.requestedFileCID)
           // break listening for messages loop since we are done with our request
           break;
         }

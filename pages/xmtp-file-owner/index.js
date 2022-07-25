@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { Client } from '@xmtp/xmtp-js';
+import { Client } from "@xmtp/xmtp-js";
+import { getXmtpEnv } from "../../src/utils/xmtp/xmtp-env";
+import * as GSXmtpMsgProtocol from "../../src/utils/xmtp/xmtp-msg-protocol"
 
 export default function XMTPFileOwner() {
   const [wallet, setWallet] = useState();
@@ -8,11 +10,9 @@ export default function XMTPFileOwner() {
   const [xmtpClient, setXmtpClient] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [requestedFileCID, setRequestedFileCID] = useState("");
+  const [requesterAddress, setRequesterAddress] = useState("");
   const [stream, setStream] = useState(null);
-
-  const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-access:file-cid:";
-  const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:file-cid:";
-  const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:file-cid:";
+  
   useEffect(() => {
     setProvider(
       new ethers.providers.InfuraProvider(
@@ -28,7 +28,8 @@ export default function XMTPFileOwner() {
         console.error("no wallet available");
         return;
       }
-      setXmtpClient(await Client.create(wallet));
+      console.log("XMTP env: ", getXmtpEnv())
+      setXmtpClient(await Client.create(wallet, { env: getXmtpEnv() }));
     }
     initXmtpClient()
   }, []);
@@ -73,10 +74,11 @@ export default function XMTPFileOwner() {
         continue
       }
       console.log(`New message from ${message.senderAddress}: ${message.content}`)
-      if (message.content.startsWith(ghostshareFileAccessRequestPrefix)) {
-        const requestedFileCID = message.content.slice(ghostshareFileAccessRequestPrefix.length);
-        console.log("requestedFileCID:", requestedFileCID)
-        setRequestedFileCID(message.content.slice(ghostshareFileAccessRequestPrefix.length));
+      if (GSXmtpMsgProtocol.isFileAccessRequestMessage(message)) {
+        const payloadData = GSXmtpMsgProtocol.extractFileAccessRequestData(message);
+        console.log("requestedFileCID:", payloadData.requestedFileCID)
+        setRequestedFileCID(payloadData.requestedFileCID);
+        setRequesterAddress(payloadData.requesterAddress);
         break;
       }
     }
@@ -88,7 +90,7 @@ export default function XMTPFileOwner() {
       return;
     }
     console.log("grant access")
-    conversation.send(ghostshareFileAccessGrantedPrefix +  requestedFileCID);
+    conversation.send(GSXmtpMsgProtocol.buildFileAccessGrantedMessage(requestedFileCID, requesterAddress));
   }
 
   const denyAccess = async () => {
@@ -97,7 +99,7 @@ export default function XMTPFileOwner() {
       return;
     }
     console.log("deny access")
-    conversation.send(ghostshareFileAccessDeniedPrefix +  requestedFileCID);
+    conversation.send(GSXmtpMsgProtocol.buildFileAccessDeniedMessage(requestedFileCID, requesterAddress));
   }
 
 

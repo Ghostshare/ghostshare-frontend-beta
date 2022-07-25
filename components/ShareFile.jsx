@@ -33,7 +33,9 @@ import { sendMetaTx } from "../components/MetaTx/fileregistry";
 import DragAndDrop from "./DragAndDrop";
 import keyToEmojis from "../src/utils/keyToEmojis";
 
-import { Client } from '@xmtp/xmtp-js';
+import { Client } from "@xmtp/xmtp-js";
+import { getXmtpEnv } from "../src/utils/xmtp/xmtp-env";
+import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol"
 
 const styles = {
   card: {
@@ -71,10 +73,6 @@ const styles = {
   },
 };
 
-const ghostshareFileAccessRequestPrefix = "#Ghostshare:request-access:"; // "#Ghostshare:request-accesss:" + cid + "$" + requester-address
-const ghostshareFileAccessGrantedPrefix = "#Ghostshare:accesss-granted:"; // "#Ghostshare:accesss-granted:" + cid + "$" + requester-address
-const ghostshareFileAccessDeniedPrefix = "#Ghostshare:accesss-denied:"; // "#Ghostshare:accesss-denied:" + cid + "$" + requester-address
-
 const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   const [selectedFile, setSelectedFile] = useState("");
   const [isUploading, setIsUploading] = useState({ status: "false" }); // status: false, true, success, error
@@ -110,7 +108,8 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
         console.error("no wallet available");
         return;
       }
-      setXmtpClient(await Client.create(newWallet));
+      console.log("XMTP env: ", getXmtpEnv());
+      setXmtpClient(await Client.create(newWallet, { env: getXmtpEnv() }));
     }
     initXmtpClient()
   }, []);
@@ -157,17 +156,16 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
         continue
       }
       console.log(`New message from ${message.senderAddress}: ${message.content}`)
-      if (message.content.startsWith(ghostshareFileAccessRequestPrefix)) {
-        const requestPayload = message.content
-          .slice(ghostshareFileAccessRequestPrefix.length)
-          .split("$");
-        const requestedFileCID = requestPayload[0];
-        const requesterAddress = requestPayload[1];
-        console.log("requestedFileCID:", requestedFileCID);
+      if (GSXmtpMsgProtocol.isFileAccessRequestMessage(message)) {
+        const payloadData = GSXmtpMsgProtocol.extractFileAccessRequestData(message);
+        console.log("requestedFileCID:", payloadData.requestedFileCID);
         console.log("sharedFileCID:", sharedFileCID);
-        if (requestedFileCID.toLowerCase() == sharedFileCID.toLowerCase()) {
+        if (payloadData.requestedFileCID.toLowerCase() == sharedFileCID.toLowerCase()) {
           console.log("setting setFileRequestInfo");
-          setFileRequestInfo({requestedFileCID, requesterAddress});
+          setFileRequestInfo({
+            requestedFileCID: payloadData.requestedFileCID, 
+            requesterAddress: payloadData.requesterAddress,
+          });
         } else {
           console.log("requestedFileCID and sharedFileCID dont' match");
         }
@@ -188,7 +186,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const grantMsg = ghostshareFileAccessGrantedPrefix + fileRequestInfo.requestedFileCID + "$" + fileRequestInfo.requesterAddress;
+    const grantMsg = GSXmtpMsgProtocol.buildFileAccessGrantedMessage(fileRequestInfo.requestedFileCID, fileRequestInfo.requesterAddress);
     console.log("grant access msg:", grantMsg);
     conversation.send(grantMsg);
   }
@@ -198,7 +196,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const denyMsg = ghostshareFileAccessDeniedPrefix + fileRequestInfo.requestedFileCID + "$" + fileRequestInfo.requesterAddress;
+    const denyMsg = GSXmtpMsgProtocol.buildFileAccessDeniedMessage(fileRequestInfo.requestedFileCID, fileRequestInfo.requesterAddress);
     console.log("deny access msg:", denyMsg);
     conversation.send(denyMsg);
   }
