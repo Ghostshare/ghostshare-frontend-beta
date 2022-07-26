@@ -184,7 +184,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     if (fileRequestInfo == null) return;
     console.log("fileRequestInfo: ", fileRequestInfo);
     setIsGranting({ status: "true" });
-    setIsGrantingRunning(false);
   }, [fileRequestInfo]);
 
   const sendAccessGrantedMsg = async () => {
@@ -305,7 +304,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   // TODO add spinner to indicate processing of the tx, more to next state if success
   const [isGrantingRunning, setIsGrantingRunning] = useState(false); // NOTE quick & drity implementation
   const grantAccess = async () => {
-    const fileCid = localStorage.getItem("lasFileCid");
+    // const fileCid = localStorage.getItem("lasFileCid");
     console.log("grant access");
     setIsGrantingRunning(true);
     await sendTx(
