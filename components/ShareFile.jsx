@@ -215,42 +215,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
   // End - XMTP logic
 
-  // TODO DELETE AFTER TESTING
-  // NOTE just for testing, changes the states based on drop down menu
-  const showTestingDropdown = true;
-  const updateState = (event) => {
-    const status = event.target.value;
-    if (status === "selectedFile=false") {
-      console.log(1);
-      setSelectedFile("");
-      setIsUploadStarted(false);
-    } else if (status === "selectedFile=true") {
-      console.log(2);
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "false" });
-      setIsUploadStarted(false);
-    } else if (status === "isUploading=true") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "true" });
-      setIsUploadStarted(true);
-    } else if (status === "isUploading=success") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "success" });
-      setIsGranting({ status: "false" });
-      setIsUploadStarted(true);
-    } else if (status === "isGranting=true") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "success" });
-      setIsGranting({ status: "true" });
-      setIsUploadStarted(true);
-    } else if (status === "isGranting=success") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "success" });
-      setIsGranting({ status: "success" });
-      setIsUploadStarted(true);
-    }
-  };
-
   const handleDeleteSelectedFile = () => {
     setSelectedFile();
   };
@@ -697,33 +661,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
   return (
     <>
-      {/** TODO DELETE AFTER TESTING */}
-      {showTestingDropdown && (
-        <div
-          style={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            zIndex: 100000,
-          }}
-        >
-          <select name="cars" id="cars" onChange={updateState}>
-            <option value="selectedFile=false">Status: No file Selected</option>
-            <option value="selectedFile=true">
-              Status: File Selected, click Upload
-            </option>
-            <option value="isUploading=true">Status: Is uploading</option>
-            <option value="isUploading=success">
-              Status: Upload successfull, waiting request
-            </option>
-            <option value="isGranting=true">Status: Granting</option>
-            <option value="isGranting=success">
-              Status: Done! Shared successfully
-            </option>
-          </select>
-        </div>
-      )}
-      {/** TODO DELETE AFTER TESTING */}
       <Card sx={styles.card} elevation={3}>
         <CardContent sx={styles.cardContent}>{cardContent}</CardContent>
       </Card>
