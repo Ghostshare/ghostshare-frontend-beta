@@ -35,7 +35,7 @@ import keyToEmojis from "../src/utils/keyToEmojis";
 
 import { Client } from "@xmtp/xmtp-js";
 import { getXmtpEnv } from "../src/utils/xmtp/xmtp-env";
-import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol"
+import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol";
 
 const styles = {
   card: {
@@ -108,7 +108,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       }
       console.log("XMTP env: ", getXmtpEnv());
       setXmtpClient(await Client.create(newWallet, { env: getXmtpEnv() }));
-    }
+    };
     if (xmtpClient == null) {
       initXmtpClient();
     }
@@ -117,7 +117,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   // Start - XMTP logic
 
   useEffect(() => {
-    if (sharedFileCID == '') return;
+    if (sharedFileCID == "") return;
     waitForFileAccessRequest();
   }, [sharedFileCID]);
 
@@ -128,42 +128,48 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     }
     console.log("waitForFileAccessRequest");
     setStream(await xmtpClient.conversations.stream());
-  }
+  };
 
   useEffect(() => {
     if (stream == null) return;
     processStream();
   }, [stream]);
-  
+
   const processStream = async () => {
     console.log("processing stream");
     for await (const newConvo of stream) {
       setConversation(newConvo);
-      console.log(`New conversation started with ${newConvo.peerAddress}`)
+      console.log(`New conversation started with ${newConvo.peerAddress}`);
       break;
     }
   };
-    
+
   useEffect(() => {
     if (conversation == null) return;
     listenToConversation();
   }, [conversation]);
-  
+
   const listenToConversation = async () => {
     for await (const message of await conversation.streamMessages()) {
       if (message.senderAddress === xmtpClient.address) {
         // This message was sent from me
-        continue
+        continue;
       }
-      console.log(`New message from ${message.senderAddress}: ${message.content}`)
+      console.log(
+        `New message from ${message.senderAddress}: ${message.content}`
+      );
       if (GSXmtpMsgProtocol.isFileAccessRequestMessage(message)) {
-        const payloadData = GSXmtpMsgProtocol.extractFileAccessRequestData(message);
+        const payloadData =
+          GSXmtpMsgProtocol.extractFileAccessRequestData(message);
         console.log("requestrequestedFileCid:", payloadData.requestedFileCid);
         console.log("sharedFileCID:", sharedFileCID);
-        if (payloadData.requestedFileCid.toLowerCase() == sharedFileCID.toLowerCase()) {
+        if (
+          payloadData.requestedFileCid.toLowerCase() ==
+          sharedFileCID.toLowerCase()
+        ) {
           console.log("setting setFileRequestInfo");
           setFileRequestInfo({
-            requestedFileCid: payloadData.requestedFileCid, 
+            requestedFileCid: payloadData.requestedFileCid,
             requesterAddress: payloadData.requesterAddress,
           });
         } else {
@@ -172,7 +178,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
         // break;
       }
     }
-  }
+  };
 
   useEffect(() => {
     if (fileRequestInfo == null) return;
@@ -180,26 +186,32 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     setIsGranting({ status: "true" });
     setIsGrantingRunning(false);
   }, [fileRequestInfo]);
-  
+
   const sendAccessGrantedMsg = async () => {
     if (conversation == null) {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const grantMsg = GSXmtpMsgProtocol.buildFileAccessGrantedMessage(fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
+    const grantMsg = GSXmtpMsgProtocol.buildFileAccessGrantedMessage(
+      fileRequestInfo.requestedFileCid,
+      fileRequestInfo.requesterAddress
+    );
     console.log("grant access msg:", grantMsg);
     conversation.send(grantMsg);
-  }
+  };
 
   const sendAccessDeniedMsg = async () => {
     if (conversation == null) {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const denyMsg = GSXmtpMsgProtocol.buildFileAccessDeniedMessage(fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
+    const denyMsg = GSXmtpMsgProtocol.buildFileAccessDeniedMessage(
+      fileRequestInfo.requestedFileCid,
+      fileRequestInfo.requesterAddress
+    );
     console.log("deny access msg:", denyMsg);
     conversation.send(denyMsg);
-  }
+  };
 
   // End - XMTP logic
 
@@ -256,7 +268,8 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     setCID(null);
     try {
       // CID belongs to the IPFS Metadata
-      const { metadataCid, fileCid } = await web3StorageLitIntegration.uploadFile(selectedFile);
+      const { metadataCid, fileCid } =
+        await web3StorageLitIntegration.uploadFile(selectedFile);
       console.log({ metadataCid });
       setCID(metadataCid);
       localStorage.setItem("lasFileCid", fileCid);
@@ -331,8 +344,12 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     const fileCid = localStorage.getItem("lasFileCid");
     console.log("grant access");
     setIsGrantingRunning(true);
-    await sendTx("grantAccess", fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
-    await sendAccessGrantedMsg()
+    await sendTx(
+      "grantAccess",
+      fileRequestInfo.requestedFileCid,
+      fileRequestInfo.requesterAddress
+    );
+    await sendAccessGrantedMsg();
     setTimeout(() => {
       setIsGrantingRunning(false);
       setIsGranting({ status: "success" });
@@ -347,10 +364,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     }, 3000);
   };
 
-  const openDashboard = () => {
-    console.log("open user dashboard");
-  };
-
   const resetAllStates = () => {
     console.log("ready to upload another file");
     setSelectedFile();
@@ -362,12 +375,12 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   // CID for private link dynamically
   const shareLink = () => {
     return `${window.location.protocol}//${window.location.host}/file/${CID}/${wallet?.address}`;
-  }
+  };
 
   // NOTE generated emojis are not greatly changing
   const encryptedEmojis = () => {
     return keyToEmojis(fileRequestInfo.requesterAddress);
-  }
+  };
   // console.log({ encryptedEmojis });
 
   // Set the card content based on the stage in the share file procedure
@@ -641,7 +654,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
             front
             startIcon={<AccountCircleIcon />}
             sx={{ fontSize: "0.9rem", marginTop: "5px" }}
-            onClick={openDashboard}
+            href="/account"
           >
             To your Dashboard
           </Button>
