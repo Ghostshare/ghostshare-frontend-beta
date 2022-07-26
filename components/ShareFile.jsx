@@ -87,10 +87,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   const [fileRequestInfo, setFileRequestInfo] = useState(null);
   const [wallet, setWallet] = useState(null);
 
-  const [recipientAddress, setRecipientAddress] = useState(
-    "0x3a973cCC40A2436A518c6C531ADe829d22fde451"
-  ); // TODO set dynamically
-
   const web3StorageLitIntegration = new Integration("mumbai");
 
   useEffect(() => {
@@ -260,14 +256,9 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     setCID(null);
     try {
       // CID belongs to the IPFS Metadata
-      const cid = await web3StorageLitIntegration.uploadFile(selectedFile);
-      console.log({ cid });
-      setCID(cid);
-      // Retrieve fileCid from Metadata
-      const fileMetadata = await web3StorageLitIntegration.retrieveFileMetadata(
-        cid
-      );
-      const fileCid = fileMetadata?.fileCid;
+      const { metadataCid, fileCid } = await web3StorageLitIntegration.uploadFile(selectedFile);
+      console.log({ metadataCid });
+      setCID(metadataCid);
       localStorage.setItem("lasFileCid", fileCid);
       // sendMetaTx("registerFile")
       sendTx("registerFile", fileCid);
@@ -374,7 +365,9 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   }
 
   // NOTE generated emojis are not greatly changing
-  const encryptedEmojis = keyToEmojis(recipientAddress);
+  const encryptedEmojis = () => {
+    return keyToEmojis(fileRequestInfo.requesterAddress);
+  }
   // console.log({ encryptedEmojis });
 
   // Set the card content based on the stage in the share file procedure
@@ -568,7 +561,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
                     marginRight: "10px",
                   }}
                 >
-                  {encryptedEmojis}
+                  {encryptedEmojis()}
                 </Box>
                 {!isGrantingRunning ? (
                   <>
