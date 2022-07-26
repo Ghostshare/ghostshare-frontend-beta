@@ -361,7 +361,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
   // CID for private link dynamically
   const shareLink = () => {
-    return `www.ghostshare.xyz/file/${CID}/${wallet?.address}`;
+    return `${window.location.protocol}//${window.location.host}/file/${CID}/${wallet?.address}`;
   }
 
   // NOTE generated emojis are not greatly changing
