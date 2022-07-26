@@ -72,7 +72,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       )
     );
     const privateKey = localStorage.getItem("privateKey");
-    console.log(privateKey, privateKey.length);
     web3StorageLitIntegration.startLitClient(window);
     const wallet = new ethers.Wallet(privateKey, provider);
     setWallet(wallet);
@@ -103,9 +102,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
   }, [cid, address]);
 
   useEffect(() => {
-    console.log({ fileMetadata });
     if (fileMetadata?.fileCid) {
-      console.log({ fileMetadata });
       setLookingForFile(false);
       setIsFileFound(true);
       hasAccess();
@@ -118,14 +115,12 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
         await web3StorageLitIntegration.retrieveFileMetadata(cid);
       setFileMetadata(retrievedFileMetadata);
     } catch {
-      console.log("retrieveFileMetadata false");
       setLookingForFile(false);
       setIsFileFound(false);
     }
   };
 
   const requestAccess = async () => {
-    console.log("request access");
     setIsGranting({ status: "true" });
     setIsRequestStarted(true);
     await lookForUserAccess();
@@ -232,14 +227,10 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
           payloadData.requestedFileCid.toLowerCase() ==
           fileMetadata.fileCid.toLowerCase()
         ) {
-          // if (payloadData.requesterAddress.toLowerCase() == address.toLowerCase()) {
           console.log("Access to file granted");
           setInterval(async () => {
             await hasAccess();
           }, 4000);
-          // } else {
-          // console.log("requesterAddress and address dont' match");
-          // }
         } else {
           console.log("requestedFileCid and cid dont' match");
         }
@@ -259,13 +250,9 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
           payloadData.requestedFileCid.toLowerCase() ==
           fileMetadata.fileCid.toLowerCase()
         ) {
-          // if (payloadData.requesterAddress.toLowerCase() == address.toLowerCase()) {
           console.log("Access to file denied");
           setIsAccessToFileDenied(true);
           setIsGranting({ status: "success" });
-          // } else {
-          // console.log("requesterAddress and address dont' match");
-          // }
         } else {
           console.log("requestedFileCid and cid dont' match");
         }
@@ -303,8 +290,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       }
     } catch (err) {
       console.log(err?.message + err?.data?.message || err);
-    } finally {
-      console.log("Done with hasAccess");
     }
   };
 
@@ -328,7 +313,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
 
   // NOTE generated emojis are not greatly changing
   const encryptedEmojis = keyToEmojis(recipientAddress);
-  // console.log({ encryptedEmojis });
 
   // Set the card content based on the stage in the share file procedure
   let cardContent;
@@ -543,7 +527,9 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
             size={100}
             sx={{ marginTop: "25px", marginBottom: "25px" }}
           />
-          <Typography>See you next time 🙋‍♀️️️</Typography>
+          <Typography>
+            Please wait a moment for the download to finish...
+          </Typography>
         </Box>
       </>
     );
@@ -562,11 +548,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
           }}
         >
           <Typography sx={styles.cardTitle}>Access to file Denied</Typography>
-          <CircularProgress
-            size={100}
-            sx={{ marginTop: "25px", marginBottom: "25px" }}
-          />
-          <Typography>See you next time 🙋‍♀️️️</Typography>
         </Box>
       </>
     );
