@@ -53,6 +53,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [isAccessToFileDenied, setIsAccessToFileDenied] = useState(false);
+  const [hasAccessToFile, setHasAccessToFile] = useState(false);
 
   const web3StorageLitIntegration = new Integration("mumbai");
   const [provider, SetProvider] = useState(null);
@@ -130,7 +131,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     if (cid && address) {
       setTimeout(() => {
         retrieveFileMetadata();
-        hasAccess();
         setLookingForFile(false);
       }, 4000);
     }
@@ -138,6 +138,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
 
   useEffect(() => {
     if (fileMetadata?.fileCid) {
+      hasAccess();
       setIsFileFound(true);
     } else {
       setIsFileFound(false);
@@ -300,7 +301,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     );
 
     // const hashedFileId = await hash(fileMetadata.fileCid);
-    const thisCid = (fileMetadata != null) ? fileMetadata.fileCid : cid;
+    const thisCid = fileMetadata.fileCid;
     const hashedFileId = await hash(thisCid);
     console.log("hashedFileId: ", hashedFileId);
     try {
@@ -311,6 +312,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       console.log({ _hasAccess });
       if (_hasAccess) {
         setIsGranting({ status: "success" });
+        setHasAccessToFile(true);
       }
     } catch (err) {
       console.log(err?.message + err?.data?.message || err);
@@ -343,7 +345,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
 
   // Set the card content based on the stage in the share file procedure
   let cardContent;
-
   if (lookingForFile) {
     cardContent = (
       <Box
@@ -459,7 +460,8 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     isGranting.status === "success" &&
     isDownloading == false &&
     !downloadSuccess && 
-    !isAccessToFileDenied
+    !isAccessToFileDenied &&
+    hasAccessToFile
   ) {
     cardContent = (
       <>
