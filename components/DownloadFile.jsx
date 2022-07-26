@@ -228,9 +228,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
           fileMetadata.fileCid.toLowerCase()
         ) {
           console.log("Access to file granted");
-          setInterval(async () => {
-            await hasAccess();
-          }, 4000);
+          startLookingForAccess();
         } else {
           console.log("requestedFileCid and cid dont' match");
         }
@@ -258,6 +256,18 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
         }
       }
     }
+  };
+
+  let hasAccessInterval;
+  const startLookingForAccess = () => {
+    console.log("startLookingForAccess");
+    hasAccessInterval = setInterval(async () => {
+      await hasAccess();
+    }, 4000);
+  };
+  const stopLookingForAccess = () => {
+    console.log("stopLookingForAccess");
+    clearInterval(hasAccessInterval);
   };
 
   // TODO refactor inside utils
@@ -288,6 +298,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       console.log({ _hasAccess });
       if (_hasAccess) {
         setIsGranting({ status: "success" });
+        stopLookingForAccess();
       }
     } catch (err) {
       console.log(err?.message + err?.data?.message || err);
