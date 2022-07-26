@@ -2,7 +2,12 @@
 
 module.exports = {
   reactStrictMode: true,
-  swcMinify: true,
+  swcMinify: false,
+  experimental: {
+    images: {
+      unoptimized: true
+    },
+  },
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
