@@ -260,14 +260,9 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     setCID(null);
     try {
       // CID belongs to the IPFS Metadata
-      const cid = await web3StorageLitIntegration.uploadFile(selectedFile);
-      console.log({ cid });
-      setCID(cid);
-      // Retrieve fileCid from Metadata
-      const fileMetadata = await web3StorageLitIntegration.retrieveFileMetadata(
-        cid
-      );
-      const fileCid = fileMetadata?.fileCid;
+      const { metadataCid, fileCid } = await web3StorageLitIntegration.uploadFile(selectedFile);
+      console.log({ metadataCid });
+      setCID(metadataCid);
       localStorage.setItem("lasFileCid", fileCid);
       // sendMetaTx("registerFile")
       sendTx("registerFile", fileCid);
