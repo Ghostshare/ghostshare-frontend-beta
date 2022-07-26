@@ -188,6 +188,11 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     console.log("sending Hi!");
     await conversation.send("#Ghostshare:hi!");
     setTimeout(() => {
+      console.log("sending Hi!");
+    }, 2000);
+    console.log("sending Hi again!");
+    await conversation.send("#Ghostshare:hi!");
+    setTimeout(() => {
       console.log("Sending FileAccessRequestMessage");
     }, 2000);
     const reqMsg = GSXmtpMsgProtocol.buildFileAccessRequestMessage(fileMetadata.fileCid, wallet.address);
