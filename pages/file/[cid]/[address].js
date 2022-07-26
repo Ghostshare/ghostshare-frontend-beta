@@ -3,15 +3,15 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { Typography, Grid, Container, Box, Link } from "@mui/material";
 import Image from "next/image";
-import Navbar from "../../components/Navbar";
-import DownloadFile from "../../components/DownloadFile";
-import WhatWhyHow from "../../components/WhatWhyHow";
-import Footer from "../../components/Footer";
-import styles from "../../styles/Home.module.css";
+import Navbar from "../../../components/Navbar";
+import DownloadFile from "../../../components/DownloadFile";
+import WhatWhyHow from "../../../components/WhatWhyHow";
+import Footer from "../../../components/Footer";
+import styles from "../../../styles/Home.module.css";
 
 export default function Download() {
   const router = useRouter();
-  const { cid } = router.query; // ghostshare.xyz/file/cid
+  const { cid, address } = router.query; // ghostshare.xyz/file/cid/address
   const [isRequestStarted, setIsRequestStarted] = useState(false);
 
   const Styles = {
@@ -83,6 +83,7 @@ export default function Download() {
               >
                 <DownloadFile
                   cid={cid}
+                  address={address}
                   setIsRequestStarted={setIsRequestStarted}
                 />
               </Grid>

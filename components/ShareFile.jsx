@@ -85,6 +85,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   const [sharedFileCID, setSharedFileCID] = useState("");
   const [stream, setStream] = useState(null);
   const [fileRequestInfo, setFileRequestInfo] = useState(null);
+  const [wallet, setWallet] = useState(null);
 
   const [recipientAddress, setRecipientAddress] = useState(
     "0x3a973cCC40A2436A518c6C531ADe829d22fde451"
@@ -102,6 +103,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     const privateKey = localStorage.getItem("privateKey");
     web3StorageLitIntegration.startLitClient(window);
     const newWallet = new ethers.Wallet(privateKey, provider);
+    setWallet(newWallet);
     signAndSaveAuthMessage(newWallet, window);
     const initXmtpClient = async () => {
       if (!newWallet) {
@@ -111,7 +113,9 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       console.log("XMTP env: ", getXmtpEnv());
       setXmtpClient(await Client.create(newWallet, { env: getXmtpEnv() }));
     }
-    initXmtpClient()
+    if (xmtpClient == null) {
+      initXmtpClient();
+    }
   }, []);
 
   // Start - XMTP logic
@@ -158,16 +162,16 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       console.log(`New message from ${message.senderAddress}: ${message.content}`)
       if (GSXmtpMsgProtocol.isFileAccessRequestMessage(message)) {
         const payloadData = GSXmtpMsgProtocol.extractFileAccessRequestData(message);
-        console.log("requestedFileCID:", payloadData.requestedFileCID);
+        console.log("requestrequestedFileCid:", payloadData.requestedFileCid);
         console.log("sharedFileCID:", sharedFileCID);
-        if (payloadData.requestedFileCID.toLowerCase() == sharedFileCID.toLowerCase()) {
+        if (payloadData.requestedFileCid.toLowerCase() == sharedFileCID.toLowerCase()) {
           console.log("setting setFileRequestInfo");
           setFileRequestInfo({
-            requestedFileCID: payloadData.requestedFileCID, 
+            requestedFileCid: payloadData.requestedFileCid, 
             requesterAddress: payloadData.requesterAddress,
           });
         } else {
-          console.log("requestedFileCID and sharedFileCID dont' match");
+          console.log("requestrequestedFileCid and sharedFileCID dont' match");
         }
         // break;
       }
@@ -186,7 +190,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const grantMsg = GSXmtpMsgProtocol.buildFileAccessGrantedMessage(fileRequestInfo.requestedFileCID, fileRequestInfo.requesterAddress);
+    const grantMsg = GSXmtpMsgProtocol.buildFileAccessGrantedMessage(fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
     console.log("grant access msg:", grantMsg);
     conversation.send(grantMsg);
   }
@@ -196,7 +200,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const denyMsg = GSXmtpMsgProtocol.buildFileAccessDeniedMessage(fileRequestInfo.requestedFileCID, fileRequestInfo.requesterAddress);
+    const denyMsg = GSXmtpMsgProtocol.buildFileAccessDeniedMessage(fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
     console.log("deny access msg:", denyMsg);
     conversation.send(denyMsg);
   }
@@ -287,7 +291,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     return "0x" + hashHex;
   };
 
-  const sendTx = async (method, fileCid) => {
+  const sendTx = async (method, fileCid, address) => {
     console.log("### STARTED sendTx ###");
     console.log({ method });
     console.log({ fileCid });
@@ -304,7 +308,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       if (method === "registerFile") {
         value = [hashedFileId];
       } else if (method === "grantAccess") {
-        value = [hashedFileId, recipientAddress];
+        value = [hashedFileId, address];
       }
 
       const privateKey = localStorage.getItem("privateKey");
@@ -336,7 +340,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     const fileCid = localStorage.getItem("lasFileCid");
     console.log("grant access");
     setIsGrantingRunning(true);
-    await sendTx("grantAccess", fileCid);
+    await sendTx("grantAccess", fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
     await sendAccessGrantedMsg()
     setTimeout(() => {
       setIsGrantingRunning(false);
@@ -365,7 +369,9 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   };
 
   // CID for private link dynamically
-  const shareLink = `www.ghostshare.xyz/file/${CID}`;
+  const shareLink = () => {
+    return `www.ghostshare.xyz/file/${CID}/${wallet?.address}`;
+  }
 
   // NOTE generated emojis are not greatly changing
   const encryptedEmojis = keyToEmojis(recipientAddress);
@@ -496,12 +502,12 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
             Before someone can access it, you have to share the invite link and
             grant access shortly.
           </Typography>
-          <Input sx={styles.shareLinkTextfield} value={shareLink} />
+          <Input sx={styles.shareLinkTextfield} value={shareLink()} />
           <Button
             size="small"
             startIcon={<ContentCopyIcon />}
-            onClick={() => copy(shareLink)}
-            value={shareLink}
+            onClick={() => copy(shareLink())}
+            value={shareLink()}
             sx={styles.shareLinkButton}
           >
             Copy link & share it!
