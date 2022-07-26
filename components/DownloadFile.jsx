@@ -64,37 +64,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
   const [conversation, setConversation] = useState(null);
   const [xmtpClient, setXmtpClient] = useState(null);
 
-  // TODO DELETE AFTER TESTING
-  // NOTE just for testing, changes the states based on drop down menu
-  const updateState = (event) => {
-    const status = event.target.value;
-    if (status === "isFileFound=false") {
-      setIsFileFound(false);
-      setIsGranting({ status: "false" });
-      setIsDownloading(false);
-      setIsRequestStarted(false);
-    } else if (status === "isGranting=false") {
-      setIsFileFound(true);
-      setIsGranting({ status: "false" });
-      setIsRequestStarted(false);
-    } else if (status === "isGranting=true") {
-      setIsFileFound(true);
-      setIsGranting({ status: "true" });
-      setIsRequestStarted(true);
-    } else if (status === "isGranting=success") {
-      setIsFileFound(true);
-      setIsGranting({ status: "success" });
-      setIsDownloading(false);
-      setIsRequestStarted(true);
-      requestAccess();
-    } else if (status === "isDownloading=true") {
-      setIsFileFound(true);
-      setIsGranting({ status: "success" });
-      setIsDownloading(true);
-      setIsRequestStarted(true);
-    }
-  };
-
   useEffect(() => {
     SetProvider(
       new ethers.providers.InfuraProvider(
@@ -629,26 +598,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
 
   return (
     <>
-      {/** TODO DELETE AFTER TESTING */}
-      <div
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          zIndex: 100000,
-        }}
-      >
-        <select name="cars" id="cars" onChange={updateState}>
-          <option value="isFileFound=false">Status: File not found</option>
-          <option value="isGranting=false">Status: Request access</option>
-          <option value="isGranting=true">Status: Waiting to be granted</option>
-          <option value="isGranting=success">
-            Status: Granted, can Download
-          </option>
-          <option value="isDownloading=true">Status: Downloading</option>
-        </select>
-      </div>
-      {/** TODO DELETE AFTER TESTING */}
       <Card sx={styles.card} elevation={3}>
         <CardContent sx={styles.cardContent}>{cardContent}</CardContent>
       </Card>
