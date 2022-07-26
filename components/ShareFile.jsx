@@ -83,6 +83,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   const [xmtpClient, setXmtpClient] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [sharedFileCID, setSharedFileCID] = useState("");
+  const [sharedFileMetadataCID, setSharedFileMetadataCID] = useState("");
   const [stream, setStream] = useState(null);
   const [fileRequestInfo, setFileRequestInfo] = useState(null);
   const [wallet, setWallet] = useState(null);
@@ -259,12 +260,13 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       const { metadataCid, fileCid } = await web3StorageLitIntegration.uploadFile(selectedFile);
       console.log({ metadataCid });
       setCID(metadataCid);
+      setSharedFileMetadataCID(metadataCid);
+      setSharedFileCID(fileCid);
       localStorage.setItem("lasFileCid", fileCid);
       // sendMetaTx("registerFile")
       sendTx("registerFile", fileCid);
       // setUploadIsDone(true) --> spinner stops
       setIsUploading({ status: "success" });
-      setSharedFileCID(fileCid);
     } catch (err) {
       console.log(err);
       setIsUploadStarted(false);
@@ -361,7 +363,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
   // CID for private link dynamically
   const shareLink = () => {
-    return `${window.location.protocol}//${window.location.host}/file/${CID}/${wallet?.address}`;
+    return `${window.location.protocol}//${window.location.host}/file/${sharedFileMetadataCID}/${wallet?.address}`;
   }
 
   // NOTE generated emojis are not greatly changing

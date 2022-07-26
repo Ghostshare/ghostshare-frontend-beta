@@ -130,6 +130,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     if (cid && address) {
       setTimeout(() => {
         retrieveFileMetadata();
+        hasAccess();
         setLookingForFile(false);
       }, 4000);
     }
@@ -244,8 +245,8 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
         const payloadData = GSXmtpMsgProtocol.extractFileAccessGrantedData(message);
         console.log("requestedFileCID:", payloadData.requestedFileCid);
         console.log("fileMetadata.fileCid:", fileMetadata.fileCid);
-        // console.log("payloadData.requesterAddress:", payloadData.requesterAddress);
-        // console.log("address:", address);        
+        console.log("payloadData.requesterAddress:", payloadData.requesterAddress);
+        console.log("address:", address);        
         if (payloadData.requestedFileCid.toLowerCase() == fileMetadata.fileCid.toLowerCase()) {
           // if (payloadData.requesterAddress.toLowerCase() == address.toLowerCase()) {
             console.log("Access to file granted");
@@ -298,7 +299,9 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       provider
     );
 
-    const hashedFileId = await hash(fileMetadata.fileCid);
+    // const hashedFileId = await hash(fileMetadata.fileCid);
+    const thisCid = (fileMetadata != null) ? fileMetadata.fileCid : cid;
+    const hashedFileId = await hash(thisCid);
     console.log("hashedFileId: ", hashedFileId);
     try {
       const _hasAccess = await fileRegistryContract.hasAccess(
