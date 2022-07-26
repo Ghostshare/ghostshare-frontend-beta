@@ -260,6 +260,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     }
   };
 
+  // TODO refactor inside utils
   const hash = async (data) => {
     const utf8 = new TextEncoder().encode(data);
     const hashBuffer = await crypto.subtle.digest("SHA-256", utf8);
@@ -561,6 +562,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             paddingLeft: "20px",
             paddingRight: "20px",
           }}
