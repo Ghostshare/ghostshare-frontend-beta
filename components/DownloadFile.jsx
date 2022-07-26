@@ -24,7 +24,7 @@ import { signAndSaveAuthMessage } from "../src/utils/signer";
 
 import { Client } from "@xmtp/xmtp-js";
 import { getXmtpEnv } from "../src/utils/xmtp/xmtp-env";
-import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol"
+import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol";
 
 const styles = {
   card: {
@@ -48,7 +48,7 @@ const styles = {
 };
 
 const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
-  const [isFileFound, setIsFileFound] = useState(false);
+  const [isFileFound, setIsFileFound] = useState(true);
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -63,7 +63,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
   const [stream, setStream] = useState(null);
   const [conversation, setConversation] = useState(null);
   const [xmtpClient, setXmtpClient] = useState(null);
-
 
   // TODO DELETE AFTER TESTING
   // NOTE just for testing, changes the states based on drop down menu
@@ -116,9 +115,9 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       }
       console.log("XMTP env: ", getXmtpEnv());
       setXmtpClient(await Client.create(wallet, { env: getXmtpEnv() }));
-    }
+    };
     if (xmtpClient == null) {
-          initXmtpClient();
+      initXmtpClient();
     }
     if (typeof window !== "undefined") {
       // Perform localStorage action
@@ -130,22 +129,30 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     if (cid && address) {
       setTimeout(() => {
         retrieveFileMetadata();
-        setLookingForFile(false);
       }, 4000);
     }
   }, [cid, address]);
 
   useEffect(() => {
+    console.log({ fileMetadata });
     if (fileMetadata?.fileCid) {
+      console.log({ fileMetadata });
+      setLookingForFile(false);
       setIsFileFound(true);
-    } else {
-      setIsFileFound(false);
+      hasAccess();
     }
   }, [fileMetadata]);
 
   const retrieveFileMetadata = async () => {
-    const retrievedFileMetadata = await web3StorageLitIntegration.retrieveFileMetadata(cid);
-    setFileMetadata(retrievedFileMetadata);
+    try {
+      const retrievedFileMetadata =
+        await web3StorageLitIntegration.retrieveFileMetadata(cid);
+      setFileMetadata(retrievedFileMetadata);
+    } catch {
+      console.log("retrieveFileMetadata false");
+      setLookingForFile(false);
+      setIsFileFound(false);
+    }
   };
 
   const requestAccess = async () => {
@@ -195,12 +202,15 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     setTimeout(() => {
       console.log("Sending FileAccessRequestMessage");
     }, 2000);
-    const reqMsg = GSXmtpMsgProtocol.buildFileAccessRequestMessage(fileMetadata.fileCid, wallet.address);
+    const reqMsg = GSXmtpMsgProtocol.buildFileAccessRequestMessage(
+      fileMetadata.fileCid,
+      wallet.address
+    );
     console.log("requesting file access:", reqMsg);
     await conversation.send(reqMsg);
     await waitForFileAccessRequestResponse();
     if (conversation == null) {
-      console.log("Conversation is null");      
+      console.log("Conversation is null");
     }
   };
 
@@ -211,75 +221,88 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     }
     console.log("waitForFileAccessRequestResponse");
     setStream(await xmtpClient.conversations.stream());
-  }
+  };
 
   useEffect(() => {
     if (stream == null) return;
     processStream();
   }, [stream]);
-  
+
   const processStream = async () => {
     console.log("processing stream");
     for await (const newConvo of stream) {
       setConversation(newConvo);
-      console.log(`New conversation started with ${newConvo.peerAddress}`)
+      console.log(`New conversation started with ${newConvo.peerAddress}`);
       break;
     }
   };
-    
+
   useEffect(() => {
     if (conversation == null) return;
     listenToConversation();
   }, [conversation]);
-  
+
   const listenToConversation = async () => {
     for await (const message of await conversation.streamMessages()) {
       if (message.senderAddress === xmtpClient.address) {
         // This message was sent from me
-        continue
+        continue;
       }
-      console.log(`New message from ${message.senderAddress}: ${message.content}`)
+      console.log(
+        `New message from ${message.senderAddress}: ${message.content}`
+      );
       if (GSXmtpMsgProtocol.isFileAccessGrantedMessage(message)) {
         console.log("Received a FileAccessGrantedMessage from file owner");
-        const payloadData = GSXmtpMsgProtocol.extractFileAccessGrantedData(message);
+        const payloadData =
+          GSXmtpMsgProtocol.extractFileAccessGrantedData(message);
         console.log("requestedFileCID:", payloadData.requestedFileCid);
         console.log("fileMetadata.fileCid:", fileMetadata.fileCid);
         // console.log("payloadData.requesterAddress:", payloadData.requesterAddress);
-        // console.log("address:", address);        
-        if (payloadData.requestedFileCid.toLowerCase() == fileMetadata.fileCid.toLowerCase()) {
+        // console.log("address:", address);
+        if (
+          payloadData.requestedFileCid.toLowerCase() ==
+          fileMetadata.fileCid.toLowerCase()
+        ) {
           // if (payloadData.requesterAddress.toLowerCase() == address.toLowerCase()) {
-            console.log("Access to file granted");
-            setInterval(async () => {
-              await hasAccess();
-            }, 4000);
+          console.log("Access to file granted");
+          setInterval(async () => {
+            await hasAccess();
+          }, 4000);
           // } else {
-            // console.log("requesterAddress and address dont' match");
-          // }        
+          // console.log("requesterAddress and address dont' match");
+          // }
         } else {
           console.log("requestedFileCid and cid dont' match");
         }
         // break;
       } else if (GSXmtpMsgProtocol.isFileAccessDeniedMessage(message)) {
         console.log("Received a FileAccessDeniedMessage from file owner");
-        const payloadData = GSXmtpMsgProtocol.extractFileAccessDeniedData(message);
+        const payloadData =
+          GSXmtpMsgProtocol.extractFileAccessDeniedData(message);
         console.log("requestedFileCID:", payloadData.requestedFileCid);
         console.log("fileMetadata.fileCid:", fileMetadata.fileCid);
-        console.log("payloadData.requesterAddress:", payloadData.requesterAddress);
+        console.log(
+          "payloadData.requesterAddress:",
+          payloadData.requesterAddress
+        );
         console.log("address:", address);
-        if (payloadData.requestedFileCid.toLowerCase() == fileMetadata.fileCid.toLowerCase()) {
+        if (
+          payloadData.requestedFileCid.toLowerCase() ==
+          fileMetadata.fileCid.toLowerCase()
+        ) {
           // if (payloadData.requesterAddress.toLowerCase() == address.toLowerCase()) {
-            console.log("Access to file denied");
-            setIsAccessToFileDenied(true);
-            setIsGranting({ status: "success"});
+          console.log("Access to file denied");
+          setIsAccessToFileDenied(true);
+          setIsGranting({ status: "success" });
           // } else {
-            // console.log("requesterAddress and address dont' match");
-          // }        
+          // console.log("requesterAddress and address dont' match");
+          // }
         } else {
           console.log("requestedFileCid and cid dont' match");
         }
       }
     }
-  }
+  };
 
   const hash = async (data) => {
     const utf8 = new TextEncoder().encode(data);
@@ -353,6 +376,28 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       >
         <Typography sx={styles.cardTitle}>Looking for file...</Typography>
         <CircularProgress size={100} sx={{ marginTop: "20px" }} />
+      </Box>
+    );
+  } else if (!isFileFound) {
+    cardContent = (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "0px",
+        }}
+      >
+        <Typography sx={styles.cardTitle} color="error">
+          File not found
+        </Typography>
+        <HighlightOffIcon sx={{ fontSize: "60px" }} color="error" />
+        <Typography sx={{ fontWeight: "bold" }}>
+          Please check if the link is correct.{" "}
+        </Typography>
+        <Typography
+          sx={{ fontSize: "0.8rem", marginTop: "5px", display: "flex" }}
+        >{`File with id of: ${cid}, not found.`}</Typography>
       </Box>
     );
   } else if (isGranting.status === "false" || isGranting.status === "true") {
@@ -455,7 +500,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
   } else if (
     isGranting.status === "success" &&
     isDownloading == false &&
-    !downloadSuccess && 
+    !downloadSuccess &&
     !isAccessToFileDenied
   ) {
     cardContent = (
@@ -579,28 +624,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
           </Typography>
         </Box>
       </>
-    );
-  } else if (!isFileFound) {
-    cardContent = (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: "0px",
-        }}
-      >
-        <Typography sx={styles.cardTitle} color="error">
-          File not found
-        </Typography>
-        <HighlightOffIcon sx={{ fontSize: "60px" }} color="error" />
-        <Typography sx={{ fontWeight: "bold" }}>
-          Please check if the link is correct.{" "}
-        </Typography>
-        <Typography
-          sx={{ fontSize: "0.8rem", marginTop: "5px", display: "flex" }}
-        >{`File with id of: ${cid}, not found.`}</Typography>
-      </Box>
     );
   }
 
