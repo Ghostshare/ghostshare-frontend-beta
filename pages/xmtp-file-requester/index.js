@@ -90,14 +90,14 @@ export default function XMTPFileRequester() {
         // If we are processing an access granted message
           setFileAccessStatus("Access granted");
           const payloadData = GSXmtpMsgProtocol.extractFileAccessGrantedData(message);
-          console.log("got access granted to FileCID:", payloadData.requestedFileCID)
+          console.log("got access granted to FileCID:", payloadData.requestedFileCid)
           // break listening for messages loop since we are done with our request
           break;
         } else if (GSXmtpMsgProtocol.isFileAccessDeniedMessage(message)) {
           // If we are processing an access denied message
           setFileAccessStatus("Access denied");          
           const payloadData = GSXmtpMsgProtocol.extractFileAccessDeniedData(message);
-          console.log("got access denied to FileCID:", payloadData.requestedFileCID)
+          console.log("got access denied to FileCID:", payloadData.requestedFileCid)
           // break listening for messages loop since we are done with our request
           break;
         }

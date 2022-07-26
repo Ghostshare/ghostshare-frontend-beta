@@ -53,7 +53,7 @@ const extractData = (msgPrefix, message) => {
           .slice(msgPrefix.length)
           .split(FIELD_SEPARATOR);
   return {
-    requestedFileCID: payload[0],
+    requestedFileCid: payload[0],
     requesterAddress: payload[1],
   }
 }
