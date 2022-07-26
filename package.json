@@ -30,7 +30,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "use-local-storage-state": "^18.1.0",
-    "web3.storage-lit-sdk": "^0.1.28"
+    "web3.storage-lit-sdk": "^0.1.29"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
