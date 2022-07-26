@@ -508,12 +508,14 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
             Before someone can access it, you have to share the invite link and
             grant access shortly.
           </Typography>
-          <Input sx={styles.shareLinkTextfield} value={shareLink()} />
+          <Input
+            sx={styles.shareLinkTextfield}
+            value={`www.ghostshare.xyz/file/${CID}/${wallet?.address}`}
+          />
           <Button
             size="small"
             startIcon={<ContentCopyIcon />}
             onClick={() => copy(shareLink())}
-            value={shareLink()}
             sx={styles.shareLinkButton}
           >
             Copy link & share it!
