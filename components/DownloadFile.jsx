@@ -24,7 +24,7 @@ import { signAndSaveAuthMessage } from "../src/utils/signer";
 
 import { Client } from "@xmtp/xmtp-js";
 import { getXmtpEnv } from "../src/utils/xmtp/xmtp-env";
-import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol"
+import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol";
 
 const styles = {
   card: {
@@ -48,7 +48,7 @@ const styles = {
 };
 
 const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
-  const [isFileFound, setIsFileFound] = useState(false);
+  const [isFileFound, setIsFileFound] = useState(true);
   const [isGranting, setIsGranting] = useState({ status: "false" }); // status: false, true, success, error
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -64,38 +64,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
   const [conversation, setConversation] = useState(null);
   const [xmtpClient, setXmtpClient] = useState(null);
 
-
-  // TODO DELETE AFTER TESTING
-  // NOTE just for testing, changes the states based on drop down menu
-  const updateState = (event) => {
-    const status = event.target.value;
-    if (status === "isFileFound=false") {
-      setIsFileFound(false);
-      setIsGranting({ status: "false" });
-      setIsDownloading(false);
-      setIsRequestStarted(false);
-    } else if (status === "isGranting=false") {
-      setIsFileFound(true);
-      setIsGranting({ status: "false" });
-      setIsRequestStarted(false);
-    } else if (status === "isGranting=true") {
-      setIsFileFound(true);
-      setIsGranting({ status: "true" });
-      setIsRequestStarted(true);
-    } else if (status === "isGranting=success") {
-      setIsFileFound(true);
-      setIsGranting({ status: "success" });
-      setIsDownloading(false);
-      setIsRequestStarted(true);
-      requestAccess();
-    } else if (status === "isDownloading=true") {
-      setIsFileFound(true);
-      setIsGranting({ status: "success" });
-      setIsDownloading(true);
-      setIsRequestStarted(true);
-    }
-  };
-
   useEffect(() => {
     SetProvider(
       new ethers.providers.InfuraProvider(
@@ -104,7 +72,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       )
     );
     const privateKey = localStorage.getItem("privateKey");
-    console.log(privateKey, privateKey.length);
     web3StorageLitIntegration.startLitClient(window);
     const wallet = new ethers.Wallet(privateKey, provider);
     setWallet(wallet);
@@ -116,9 +83,9 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       }
       console.log("XMTP env: ", getXmtpEnv());
       setXmtpClient(await Client.create(wallet, { env: getXmtpEnv() }));
-    }
+    };
     if (xmtpClient == null) {
-          initXmtpClient();
+      initXmtpClient();
     }
     if (typeof window !== "undefined") {
       // Perform localStorage action
@@ -130,26 +97,30 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     if (cid && address) {
       setTimeout(() => {
         retrieveFileMetadata();
-        setLookingForFile(false);
       }, 4000);
     }
   }, [cid, address]);
 
   useEffect(() => {
     if (fileMetadata?.fileCid) {
+      setLookingForFile(false);
       setIsFileFound(true);
-    } else {
-      setIsFileFound(false);
+      hasAccess();
     }
   }, [fileMetadata]);
 
   const retrieveFileMetadata = async () => {
-    const retrievedFileMetadata = await web3StorageLitIntegration.retrieveFileMetadata(cid);
-    setFileMetadata(retrievedFileMetadata);
+    try {
+      const retrievedFileMetadata =
+        await web3StorageLitIntegration.retrieveFileMetadata(cid);
+      setFileMetadata(retrievedFileMetadata);
+    } catch {
+      setLookingForFile(false);
+      setIsFileFound(false);
+    }
   };
 
   const requestAccess = async () => {
-    console.log("request access");
     setIsGranting({ status: "true" });
     setIsRequestStarted(true);
     await lookForUserAccess();
@@ -195,12 +166,15 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     setTimeout(() => {
       console.log("Sending FileAccessRequestMessage");
     }, 2000);
-    const reqMsg = GSXmtpMsgProtocol.buildFileAccessRequestMessage(fileMetadata.fileCid, wallet.address);
+    const reqMsg = GSXmtpMsgProtocol.buildFileAccessRequestMessage(
+      fileMetadata.fileCid,
+      wallet.address
+    );
     console.log("requesting file access:", reqMsg);
     await conversation.send(reqMsg);
     await waitForFileAccessRequestResponse();
     if (conversation == null) {
-      console.log("Conversation is null");      
+      console.log("Conversation is null");
     }
   };
 
@@ -211,76 +185,92 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
     }
     console.log("waitForFileAccessRequestResponse");
     setStream(await xmtpClient.conversations.stream());
-  }
+  };
 
   useEffect(() => {
     if (stream == null) return;
     processStream();
   }, [stream]);
-  
+
   const processStream = async () => {
     console.log("processing stream");
     for await (const newConvo of stream) {
       setConversation(newConvo);
-      console.log(`New conversation started with ${newConvo.peerAddress}`)
+      console.log(`New conversation started with ${newConvo.peerAddress}`);
       break;
     }
   };
-    
+
   useEffect(() => {
     if (conversation == null) return;
     listenToConversation();
   }, [conversation]);
-  
+
   const listenToConversation = async () => {
     for await (const message of await conversation.streamMessages()) {
       if (message.senderAddress === xmtpClient.address) {
         // This message was sent from me
-        continue
+        continue;
       }
-      console.log(`New message from ${message.senderAddress}: ${message.content}`)
+      console.log(
+        `New message from ${message.senderAddress}: ${message.content}`
+      );
       if (GSXmtpMsgProtocol.isFileAccessGrantedMessage(message)) {
         console.log("Received a FileAccessGrantedMessage from file owner");
-        const payloadData = GSXmtpMsgProtocol.extractFileAccessGrantedData(message);
+        const payloadData =
+          GSXmtpMsgProtocol.extractFileAccessGrantedData(message);
         console.log("requestedFileCID:", payloadData.requestedFileCid);
         console.log("fileMetadata.fileCid:", fileMetadata.fileCid);
         // console.log("payloadData.requesterAddress:", payloadData.requesterAddress);
-        // console.log("address:", address);        
-        if (payloadData.requestedFileCid.toLowerCase() == fileMetadata.fileCid.toLowerCase()) {
-          // if (payloadData.requesterAddress.toLowerCase() == address.toLowerCase()) {
-            console.log("Access to file granted");
-            setInterval(async () => {
-              await hasAccess();
-            }, 4000);
-          // } else {
-            // console.log("requesterAddress and address dont' match");
-          // }        
+        // console.log("address:", address);
+        if (
+          payloadData.requestedFileCid.toLowerCase() ==
+          fileMetadata.fileCid.toLowerCase()
+        ) {
+          console.log("Access to file granted");
+          startLookingForAccess();
         } else {
           console.log("requestedFileCid and cid dont' match");
         }
         // break;
       } else if (GSXmtpMsgProtocol.isFileAccessDeniedMessage(message)) {
         console.log("Received a FileAccessDeniedMessage from file owner");
-        const payloadData = GSXmtpMsgProtocol.extractFileAccessDeniedData(message);
+        const payloadData =
+          GSXmtpMsgProtocol.extractFileAccessDeniedData(message);
         console.log("requestedFileCID:", payloadData.requestedFileCid);
         console.log("fileMetadata.fileCid:", fileMetadata.fileCid);
-        console.log("payloadData.requesterAddress:", payloadData.requesterAddress);
+        console.log(
+          "payloadData.requesterAddress:",
+          payloadData.requesterAddress
+        );
         console.log("address:", address);
-        if (payloadData.requestedFileCid.toLowerCase() == fileMetadata.fileCid.toLowerCase()) {
-          // if (payloadData.requesterAddress.toLowerCase() == address.toLowerCase()) {
-            console.log("Access to file denied");
-            setIsAccessToFileDenied(true);
-            setIsGranting({ status: "success"});
-          // } else {
-            // console.log("requesterAddress and address dont' match");
-          // }        
+        if (
+          payloadData.requestedFileCid.toLowerCase() ==
+          fileMetadata.fileCid.toLowerCase()
+        ) {
+          console.log("Access to file denied");
+          setIsAccessToFileDenied(true);
+          setIsGranting({ status: "success" });
         } else {
           console.log("requestedFileCid and cid dont' match");
         }
       }
     }
-  }
+  };
 
+  let hasAccessInterval;
+  const startLookingForAccess = () => {
+    console.log("startLookingForAccess");
+    hasAccessInterval = setInterval(async () => {
+      await hasAccess();
+    }, 4000);
+  };
+  const stopLookingForAccess = () => {
+    console.log("stopLookingForAccess");
+    clearInterval(hasAccessInterval);
+  };
+
+  // TODO refactor inside utils
   const hash = async (data) => {
     const utf8 = new TextEncoder().encode(data);
     const hashBuffer = await crypto.subtle.digest("SHA-256", utf8);
@@ -308,11 +298,10 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       console.log({ _hasAccess });
       if (_hasAccess) {
         setIsGranting({ status: "success" });
+        stopLookingForAccess();
       }
     } catch (err) {
       console.log(err?.message + err?.data?.message || err);
-    } finally {
-      console.log("Done with hasAccess");
     }
   };
 
@@ -336,7 +325,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
 
   // NOTE generated emojis are not greatly changing
   const encryptedEmojis = keyToEmojis(recipientAddress);
-  // console.log({ encryptedEmojis });
 
   // Set the card content based on the stage in the share file procedure
   let cardContent;
@@ -353,6 +341,28 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
       >
         <Typography sx={styles.cardTitle}>Looking for file...</Typography>
         <CircularProgress size={100} sx={{ marginTop: "20px" }} />
+      </Box>
+    );
+  } else if (!isFileFound) {
+    cardContent = (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          padding: "0px",
+        }}
+      >
+        <Typography sx={styles.cardTitle} color="error">
+          File not found
+        </Typography>
+        <HighlightOffIcon sx={{ fontSize: "60px" }} color="error" />
+        <Typography sx={{ fontWeight: "bold" }}>
+          Please check if the link is correct.{" "}
+        </Typography>
+        <Typography
+          sx={{ fontSize: "0.8rem", marginTop: "5px", display: "flex" }}
+        >{`File with id of: ${cid}, not found.`}</Typography>
       </Box>
     );
   } else if (isGranting.status === "false" || isGranting.status === "true") {
@@ -455,7 +465,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
   } else if (
     isGranting.status === "success" &&
     isDownloading == false &&
-    !downloadSuccess && 
+    !downloadSuccess &&
     !isAccessToFileDenied
   ) {
     cardContent = (
@@ -529,7 +539,9 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
             size={100}
             sx={{ marginTop: "25px", marginBottom: "25px" }}
           />
-          <Typography>See you next time 🙋‍♀️️️</Typography>
+          <Typography>
+            Please wait a moment for the download to finish...
+          </Typography>
         </Box>
       </>
     );
@@ -548,11 +560,6 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
           }}
         >
           <Typography sx={styles.cardTitle}>Access to file Denied</Typography>
-          <CircularProgress
-            size={100}
-            sx={{ marginTop: "25px", marginBottom: "25px" }}
-          />
-          <Typography>See you next time 🙋‍♀️️️</Typography>
         </Box>
       </>
     );
@@ -566,6 +573,7 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             paddingLeft: "20px",
             paddingRight: "20px",
           }}
@@ -580,52 +588,10 @@ const DownloadFile = ({ cid, address, setIsRequestStarted }) => {
         </Box>
       </>
     );
-  } else if (!isFileFound) {
-    cardContent = (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: "0px",
-        }}
-      >
-        <Typography sx={styles.cardTitle} color="error">
-          File not found
-        </Typography>
-        <HighlightOffIcon sx={{ fontSize: "60px" }} color="error" />
-        <Typography sx={{ fontWeight: "bold" }}>
-          Please check if the link is correct.{" "}
-        </Typography>
-        <Typography
-          sx={{ fontSize: "0.8rem", marginTop: "5px", display: "flex" }}
-        >{`File with id of: ${cid}, not found.`}</Typography>
-      </Box>
-    );
   }
 
   return (
     <>
-      {/** TODO DELETE AFTER TESTING */}
-      <div
-        style={{
-          position: "absolute",
-          top: "10px",
-          right: "10px",
-          zIndex: 100000,
-        }}
-      >
-        <select name="cars" id="cars" onChange={updateState}>
-          <option value="isFileFound=false">Status: File not found</option>
-          <option value="isGranting=false">Status: Request access</option>
-          <option value="isGranting=true">Status: Waiting to be granted</option>
-          <option value="isGranting=success">
-            Status: Granted, can Download
-          </option>
-          <option value="isDownloading=true">Status: Downloading</option>
-        </select>
-      </div>
-      {/** TODO DELETE AFTER TESTING */}
       <Card sx={styles.card} elevation={3}>
         <CardContent sx={styles.cardContent}>{cardContent}</CardContent>
       </Card>

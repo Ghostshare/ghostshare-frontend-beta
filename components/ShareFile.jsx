@@ -35,7 +35,7 @@ import keyToEmojis from "../src/utils/keyToEmojis";
 
 import { Client } from "@xmtp/xmtp-js";
 import { getXmtpEnv } from "../src/utils/xmtp/xmtp-env";
-import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol"
+import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol";
 
 const styles = {
   card: {
@@ -108,7 +108,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       }
       console.log("XMTP env: ", getXmtpEnv());
       setXmtpClient(await Client.create(newWallet, { env: getXmtpEnv() }));
-    }
+    };
     if (xmtpClient == null) {
       initXmtpClient();
     }
@@ -117,7 +117,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   // Start - XMTP logic
 
   useEffect(() => {
-    if (sharedFileCID == '') return;
+    if (sharedFileCID == "") return;
     waitForFileAccessRequest();
   }, [sharedFileCID]);
 
@@ -128,42 +128,48 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     }
     console.log("waitForFileAccessRequest");
     setStream(await xmtpClient.conversations.stream());
-  }
+  };
 
   useEffect(() => {
     if (stream == null) return;
     processStream();
   }, [stream]);
-  
+
   const processStream = async () => {
     console.log("processing stream");
     for await (const newConvo of stream) {
       setConversation(newConvo);
-      console.log(`New conversation started with ${newConvo.peerAddress}`)
+      console.log(`New conversation started with ${newConvo.peerAddress}`);
       break;
     }
   };
-    
+
   useEffect(() => {
     if (conversation == null) return;
     listenToConversation();
   }, [conversation]);
-  
+
   const listenToConversation = async () => {
     for await (const message of await conversation.streamMessages()) {
       if (message.senderAddress === xmtpClient.address) {
         // This message was sent from me
-        continue
+        continue;
       }
-      console.log(`New message from ${message.senderAddress}: ${message.content}`)
+      console.log(
+        `New message from ${message.senderAddress}: ${message.content}`
+      );
       if (GSXmtpMsgProtocol.isFileAccessRequestMessage(message)) {
-        const payloadData = GSXmtpMsgProtocol.extractFileAccessRequestData(message);
+        const payloadData =
+          GSXmtpMsgProtocol.extractFileAccessRequestData(message);
         console.log("requestrequestedFileCid:", payloadData.requestedFileCid);
         console.log("sharedFileCID:", sharedFileCID);
-        if (payloadData.requestedFileCid.toLowerCase() == sharedFileCID.toLowerCase()) {
+        if (
+          payloadData.requestedFileCid.toLowerCase() ==
+          sharedFileCID.toLowerCase()
+        ) {
           console.log("setting setFileRequestInfo");
           setFileRequestInfo({
-            requestedFileCid: payloadData.requestedFileCid, 
+            requestedFileCid: payloadData.requestedFileCid,
             requesterAddress: payloadData.requesterAddress,
           });
         } else {
@@ -172,72 +178,41 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
         // break;
       }
     }
-  }
+  };
 
   useEffect(() => {
     if (fileRequestInfo == null) return;
     console.log("fileRequestInfo: ", fileRequestInfo);
     setIsGranting({ status: "true" });
-    setIsGrantingRunning(false);
   }, [fileRequestInfo]);
-  
+
   const sendAccessGrantedMsg = async () => {
     if (conversation == null) {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const grantMsg = GSXmtpMsgProtocol.buildFileAccessGrantedMessage(fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
+    const grantMsg = GSXmtpMsgProtocol.buildFileAccessGrantedMessage(
+      fileRequestInfo.requestedFileCid,
+      fileRequestInfo.requesterAddress
+    );
     console.log("grant access msg:", grantMsg);
     conversation.send(grantMsg);
-  }
+  };
 
   const sendAccessDeniedMsg = async () => {
     if (conversation == null) {
       console.warn("Please wait for conversation to be setup");
       return;
     }
-    const denyMsg = GSXmtpMsgProtocol.buildFileAccessDeniedMessage(fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
+    const denyMsg = GSXmtpMsgProtocol.buildFileAccessDeniedMessage(
+      fileRequestInfo.requestedFileCid,
+      fileRequestInfo.requesterAddress
+    );
     console.log("deny access msg:", denyMsg);
     conversation.send(denyMsg);
-  }
+  };
 
   // End - XMTP logic
-
-  // TODO DELETE AFTER TESTING
-  // NOTE just for testing, changes the states based on drop down menu
-  const showTestingDropdown = true;
-  const updateState = (event) => {
-    const status = event.target.value;
-    if (status === "selectedFile=false") {
-      console.log(1);
-      setSelectedFile("");
-      setIsUploadStarted(false);
-    } else if (status === "selectedFile=true") {
-      console.log(2);
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "false" });
-      setIsUploadStarted(false);
-    } else if (status === "isUploading=true") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "true" });
-      setIsUploadStarted(true);
-    } else if (status === "isUploading=success") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "success" });
-      setIsGranting({ status: "false" });
-      setIsUploadStarted(true);
-    } else if (status === "isGranting=true") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "success" });
-      setIsGranting({ status: "true" });
-      setIsUploadStarted(true);
-    } else if (status === "isGranting=success") {
-      setSelectedFile("somefile.zip");
-      setIsUploading({ status: "success" });
-      setIsGranting({ status: "success" });
-      setIsUploadStarted(true);
-    }
-  };
 
   const handleDeleteSelectedFile = () => {
     setSelectedFile();
@@ -256,7 +231,8 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     setCID(null);
     try {
       // CID belongs to the IPFS Metadata
-      const { metadataCid, fileCid } = await web3StorageLitIntegration.uploadFile(selectedFile);
+      const { metadataCid, fileCid } =
+        await web3StorageLitIntegration.uploadFile(selectedFile);
       console.log({ metadataCid });
       setCID(metadataCid);
       localStorage.setItem("lasFileCid", fileCid);
@@ -328,11 +304,15 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   // TODO add spinner to indicate processing of the tx, more to next state if success
   const [isGrantingRunning, setIsGrantingRunning] = useState(false); // NOTE quick & drity implementation
   const grantAccess = async () => {
-    const fileCid = localStorage.getItem("lasFileCid");
+    // const fileCid = localStorage.getItem("lasFileCid");
     console.log("grant access");
     setIsGrantingRunning(true);
-    await sendTx("grantAccess", fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
-    await sendAccessGrantedMsg()
+    await sendTx(
+      "grantAccess",
+      fileRequestInfo.requestedFileCid,
+      fileRequestInfo.requesterAddress
+    );
+    await sendAccessGrantedMsg();
     setTimeout(() => {
       setIsGrantingRunning(false);
       setIsGranting({ status: "success" });
@@ -347,10 +327,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     }, 3000);
   };
 
-  const openDashboard = () => {
-    console.log("open user dashboard");
-  };
-
   const resetAllStates = () => {
     console.log("ready to upload another file");
     setSelectedFile();
@@ -362,12 +338,12 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
   // CID for private link dynamically
   const shareLink = () => {
     return `${window.location.protocol}//${window.location.host}/file/${CID}/${wallet?.address}`;
-  }
+  };
 
   // NOTE generated emojis are not greatly changing
   const encryptedEmojis = () => {
     return keyToEmojis(fileRequestInfo.requesterAddress);
-  }
+  };
   // console.log({ encryptedEmojis });
 
   // Set the card content based on the stage in the share file procedure
@@ -495,12 +471,14 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
             Before someone can access it, you have to share the invite link and
             grant access shortly.
           </Typography>
-          <Input sx={styles.shareLinkTextfield} value={shareLink()} />
+          <Input
+            sx={styles.shareLinkTextfield}
+            value={`www.ghostshare.xyz/file/${CID}/${wallet?.address}`}
+          />
           <Button
             size="small"
             startIcon={<ContentCopyIcon />}
             onClick={() => copy(shareLink())}
-            value={shareLink()}
             sx={styles.shareLinkButton}
           >
             Copy link & share it!
@@ -641,7 +619,7 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
             front
             startIcon={<AccountCircleIcon />}
             sx={{ fontSize: "0.9rem", marginTop: "5px" }}
-            onClick={openDashboard}
+            href="/account"
           >
             To your Dashboard
           </Button>
@@ -682,33 +660,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
   return (
     <>
-      {/** TODO DELETE AFTER TESTING */}
-      {showTestingDropdown && (
-        <div
-          style={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            zIndex: 100000,
-          }}
-        >
-          <select name="cars" id="cars" onChange={updateState}>
-            <option value="selectedFile=false">Status: No file Selected</option>
-            <option value="selectedFile=true">
-              Status: File Selected, click Upload
-            </option>
-            <option value="isUploading=true">Status: Is uploading</option>
-            <option value="isUploading=success">
-              Status: Upload successfull, waiting request
-            </option>
-            <option value="isGranting=true">Status: Granting</option>
-            <option value="isGranting=success">
-              Status: Done! Shared successfully
-            </option>
-          </select>
-        </div>
-      )}
-      {/** TODO DELETE AFTER TESTING */}
       <Card sx={styles.card} elevation={3}>
         <CardContent sx={styles.cardContent}>{cardContent}</CardContent>
       </Card>
