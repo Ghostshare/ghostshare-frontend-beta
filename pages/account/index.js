@@ -18,6 +18,7 @@ import RadialBackground from "../../components/RadialBackground";
 import filterTransactions from "../../src/utils/filterTransactions";
 import keyToEmojis from "../../src/utils/keyToEmojis";
 import useLocalStorage from "../../src/hooks/localStorage";
+import * as DB from "../../src/utils/db";
 
 const styles = {
   card: {
@@ -70,18 +71,56 @@ export default function Account() {
     setPrivateKey(restoredPrivateKey);
   };
 
+  const getFileCid = (hashedFileCid) => {
+    return DB.readFileCidMapping(hashedFileCid).metadataCid;
+  }
+
+  let exampleDataStructure = [
+    [
+      // Array of fileOwnerTransactions
+      // Events of type `FileRegistered` from user/fileOwner
+      // Events of type `AccessGranted` from user/fileOwner
+      {
+        fileId: "fileId",
+        fileOwner: "address",
+        recipients: [
+          { recipient: "address", timeGranted: "block_signed_at" },
+          { recipient: "address", timeGranted: "block_signed_at" },
+        ],
+      },
+      {},
+    ],
+    [
+      // Array of recipientTransactions
+      // Events of type `AccessGranted` to user/recipient
+      {
+        fileId: "fileId",
+        fileOwner: "address",
+        recipient: "address",
+      },
+    ],
+  ];
+
   // NOTE Covalent API https://www.covalenthq.com/docs/api/#/0/Get%20transactions%20for%20address/USD/1
   const getUserTransactions = async () => {
     try {
       const URL = `https://api.covalenthq.com/v1/80001/address/${userAddress}/transactions_v2/?block-signed-at-asc=true&key=${process.env.NEXT_PUBLIC_COVALENT_API_KEY}`;
       const response = await Axios.get(URL);
-      // console.log({ response });
+      console.log({ response });
       if (response?.data?.data?.items) {
         const filteredTransactions = filterTransactions(
           response?.data?.data?.items,
           userAddress
         );
         setSharedFiles(filteredTransactions.sharedFiles);
+        const receivedFiles = filteredTransactions.receivedFiled
+          .map(async (receivedFile) => {
+            return {
+              fileId: await getFileCid(receivedFile.fileId),
+              fileOwner: receivedFile.fileOwner,
+              recipient: receivedFile.recipient
+            }  
+          });
         setReceivedFiles(filteredTransactions.receivedFiled);
       }
     } catch (err) {
@@ -197,9 +236,8 @@ export default function Account() {
                       <Typography mt={1} mb={1} pr={1}>
                         Download at:
                       </Typography>
-
                       <Link
-                        href={`https://www.ghostshare.xyz/file/${file.fileId}`}
+                        href={`https://www.ghostshare.xyz/file/${file.fileId}/${file.fileOwner}`}
                       >
                         <Typography
                           sx={{
@@ -208,7 +246,7 @@ export default function Account() {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {`https://www.ghostshare.xyz/file/${file.fileId}`}
+                          {`https://www.ghostshare.xyz/file/${file.fileId}/${file.fileOwner}`}
                         </Typography>
                       </Link>
                     </Box>

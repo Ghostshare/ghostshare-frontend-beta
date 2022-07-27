@@ -35,7 +35,8 @@ import keyToEmojis from "../src/utils/keyToEmojis";
 
 import { Client } from "@xmtp/xmtp-js";
 import { getXmtpEnv } from "../src/utils/xmtp/xmtp-env";
-import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol"
+import * as GSXmtpMsgProtocol from "../src/utils/xmtp/xmtp-msg-protocol";
+import * as DB from "../src/utils/db";
 
 const styles = {
   card: {
@@ -258,11 +259,15 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
       // CID belongs to the IPFS Metadata
       const { metadataCid, fileCid } = await web3StorageLitIntegration.uploadFile(selectedFile);
       console.log({ metadataCid });
+      console.log({ fileCid });
       setCID(metadataCid);
       localStorage.setItem("lasFileCid", fileCid);
+      const hashedFileId = await hash(fileCid);
+      console.log({ hashedFileId });
       // sendMetaTx("registerFile")
-      sendTx("registerFile", fileCid);
+      sendTx("registerFile", hashedFileId);
       // setUploadIsDone(true) --> spinner stops
+      await DB.writeFileCidMapping(hashedFileId, fileCid, metadataCid);
       setIsUploading({ status: "success" });
       setSharedFileCID(fileCid);
     } catch (err) {
@@ -282,10 +287,11 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     return "0x" + hashHex;
   };
 
-  const sendTx = async (method, fileCid, address) => {
+  const sendTx = async (method, hashedFileId, address) => {
     console.log("### STARTED sendTx ###");
     console.log({ method });
-    console.log({ fileCid });
+    console.log({ hashedFileId });
+    console.log({ address });
     const fileRegistryContract = new ethers.Contract(
       contracts.FileRegistry,
       ABI.FileRegistry,
@@ -294,8 +300,6 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
 
     try {
       let value;
-      const hashedFileId = await hash(fileCid);
-      console.log("hashedFileId: ", hashedFileId);
       if (method === "registerFile") {
         value = [hashedFileId];
       } else if (method === "grantAccess") {
@@ -331,7 +335,9 @@ const ShareFile = ({ isUploadStarted, setIsUploadStarted }) => {
     const fileCid = localStorage.getItem("lasFileCid");
     console.log("grant access");
     setIsGrantingRunning(true);
-    await sendTx("grantAccess", fileRequestInfo.requestedFileCid, fileRequestInfo.requesterAddress);
+    const hashedFileId = await hash(fileRequestInfo.requestedFileCid);
+    console.log({ hashedFileId });
+    await sendTx("grantAccess", hashedFileId, fileRequestInfo.requesterAddress);
     await sendAccessGrantedMsg()
     setTimeout(() => {
       setIsGrantingRunning(false);
