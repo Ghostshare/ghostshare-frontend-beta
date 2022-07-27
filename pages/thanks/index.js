@@ -145,14 +145,14 @@ export default function Thanks() {
                 </a>
               </Grid>
               <Grid item xs={12} sm={6} md={4} sx={Styles.gridItem}>
-                <Typography sx={Styles.brand}>The Graph</Typography>
+                <Typography sx={Styles.brand}>Covalent</Typography>
                 <Typography>
-                  The Graph is an indexing protocol for querying networks like
-                  Ethereum and IPFS. Anyone can build and publish open APIs,
-                  called subgraphs, making data easily accessible.
+                  One unified API One billion possibilities. Covalent provides a
+                  unified API bringing visibility to billions of Web3 data
+                  points.
                 </Typography>
                 <a
-                  href="https://thegraph.com/en/"
+                  href="https://www.covalenthq.com/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -164,7 +164,7 @@ export default function Thanks() {
                     }}
                   >
                     <ForwardIcon />
-                    The Graph
+                    Covalent
                   </Typography>
                 </a>
               </Grid>
