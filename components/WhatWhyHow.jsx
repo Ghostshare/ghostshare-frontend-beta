@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Typography, Container, Box } from "@mui/material";
+import { Typography, Container, Box, Paper } from "@mui/material";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import EnhancedEncryptionIcon from "@mui/icons-material/EnhancedEncryption";
 import PublicIcon from "@mui/icons-material/Public";
@@ -32,9 +32,14 @@ const styles = {
     alignItems: "center",
     textAlign: "center",
   },
-  subtitleBox: { display: "flex", marginBottom: "25px" },
+  subtitleBox: { display: "flex" },
   subtitleIcon: { fontSize: "3rem", marginRight: "15px" },
-  subtitle: { fontSize: "2rem", fontWeight: "bold" },
+  subtitle: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    marginBottom: "25px",
+    textAlign: "center",
+  },
   missionBox: { display: "flex", flexDirection: "column" },
   missionText: { fontSize: "1.3rem", textAlign: "center", marginTop: "25px" },
   bold: { fontWeight: "bold" },
@@ -104,17 +109,53 @@ const WhatWhyHow = () => {
       </Box>
 
       <Box id="how" sx={styles.Box}>
-        <Container maxWidth="md">
-          <Typography variant="h1" style={{ whiteSpace: "pre-line" }}>
-            How it works.
+        <Typography style={styles.title}>How it works.</Typography>
+        <Box sx={styles.missionBox}>
+          <Typography sx={styles.subtitle}>
+            A simplified Version of what happens under the hood.
           </Typography>
-          <Typography>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
-          </Typography>
-        </Container>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Paper elevation={2}>
+              <Box sx={{ width: "60vw", height: "27vw", position: "relative" }}>
+                <Image
+                  src="/sequence-diagram-upload-download.png"
+                  alt="Sequence Digram for Upload and Download"
+                  layout="fill"
+                  objectFit="cover"
+                />
+              </Box>
+            </Paper>
+          </Box>
+          <Box sx={{ display: "flex" }}>
+            <Box
+              sx={{
+                maxWidth: "600px",
+                marginTop: "20px",
+                marginBottom: "25px",
+              }}
+            >
+              <ol>
+                <li>
+                  When uploading a file, the file gets encrypted (locally in
+                  your browser) with the help of the Lit Network.
+                </li>
+                <li>
+                  The encrypted file get stored on IPFS and the corresponding
+                  Metadata are registered in our Smart Contract.
+                </li>
+                <li>
+                  You share a file with a custom link, whereupon the recipient
+                  must request access – because the link itself is publicly
+                  available.
+                </li>
+                <li>
+                  If the recipient has been granted access, they can download
+                  and decrypt the file.
+                </li>
+              </ol>
+            </Box>
+          </Box>
+        </Box>
       </Box>
     </>
   );
