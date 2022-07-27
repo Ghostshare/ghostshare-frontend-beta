@@ -4,6 +4,7 @@ import { Typography, Container, Box, Paper } from "@mui/material";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import EnhancedEncryptionIcon from "@mui/icons-material/EnhancedEncryption";
 import PublicIcon from "@mui/icons-material/Public";
+import contracts from "../metadata/deployed_contracts.json";
 
 const styles = {
   Box: {
@@ -141,7 +142,16 @@ const WhatWhyHow = () => {
                 </li>
                 <li>
                   The encrypted file get stored on IPFS and the corresponding
-                  Metadata are registered in our Smart Contract.
+                  Metadata are registered in{" "}
+                  <a
+                    href={`https://mumbai.polygonscan.com/address/${contracts.FileRegistry}#code`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ textDecoration: "underline" }}
+                  >
+                    our Smart Contract
+                  </a>
+                  .
                 </li>
                 <li>
                   You share a file with a custom link, whereupon the recipient
