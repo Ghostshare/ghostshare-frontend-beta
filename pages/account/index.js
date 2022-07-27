@@ -18,6 +18,7 @@ import RadialBackground from "../../components/RadialBackground";
 import filterTransactions from "../../src/utils/filterTransactions";
 import keyToEmojis from "../../src/utils/keyToEmojis";
 import useLocalStorage from "../../src/hooks/localStorage";
+import * as DB from "../../src/utils/db";
 
 const styles = {
   card: {
@@ -70,6 +71,10 @@ export default function Account() {
     setPrivateKey(restoredPrivateKey);
   };
 
+  const getFileCid = (hashedFileCid) => {
+    return DB.readFileCidMapping(hashedFileCid).metadataCid;
+  }
+
   let exampleDataStructure = [
     [
       // Array of fileOwnerTransactions
@@ -108,6 +113,14 @@ export default function Account() {
           userAddress
         );
         setSharedFiles(filteredTransactions.sharedFiles);
+        const receivedFiles = filteredTransactions.receivedFiled
+          .map(async (receivedFile) => {
+            return {
+              fileId: await getFileCid(receivedFile.fileId),
+              fileOwner: receivedFile.fileOwner,
+              recipient: receivedFile.recipient
+            }  
+          });
         setReceivedFiles(filteredTransactions.receivedFiled);
       }
     } catch (err) {
