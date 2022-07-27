@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { Typography, Container, Box } from "@mui/material";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import EnhancedEncryptionIcon from "@mui/icons-material/EnhancedEncryption";
@@ -34,6 +35,9 @@ const styles = {
   subtitleBox: { display: "flex", marginBottom: "25px" },
   subtitleIcon: { fontSize: "3rem", marginRight: "15px" },
   subtitle: { fontSize: "2rem", fontWeight: "bold" },
+  missionBox: { display: "flex", flexDirection: "column" },
+  missionText: { fontSize: "1.3rem", textAlign: "center", marginTop: "25px" },
+  bold: { fontWeight: "bold" },
 };
 
 const WhatWhyHow = () => {
@@ -78,16 +82,24 @@ const WhatWhyHow = () => {
       </Box>
 
       <Box id="why" sx={styles.Box}>
-        <Container maxWidth="md">
-          <Typography variant="h1" style={{ whiteSpace: "pre-line" }}>
-            Why are we here.
-          </Typography>
-          <Typography>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
-          </Typography>
+        <Container maxWidth="sm">
+          <Typography style={styles.title}>Why are we here.</Typography>
+          <Box sx={styles.missionBox}>
+            <Image
+              src="/ghost-icon-black.svg"
+              height={130}
+              width={130}
+              alt="Ghost Logo"
+            />
+            <Typography sx={styles.missionText}>
+              Our mission is to{" "}
+              <span style={styles.bold}>bring the millions of people</span> –
+              who are currently using centralized file transfer services –{" "}
+              <span style={styles.bold}>to Web3.</span> In order to do so, we’re
+              discovering new approaches to make file sharing user-friendly,
+              without giving up privacy!
+            </Typography>
+          </Box>
         </Container>
       </Box>
 
