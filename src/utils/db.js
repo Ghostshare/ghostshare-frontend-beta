@@ -2,9 +2,9 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, get, child } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: "DJ7qJWbkf3A5NhuxZvoO2atc0gMxAJtlBLKnrtRp",
-  projectId: "ghostshare-40aee",
-  databaseURL: "https://ghostshare-40aee-default-rtdb.firebaseio.com",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DB_URL,
 };
 
 // Initialize Firebase
